@@ -52,7 +52,6 @@ Remove variants that either:
 * Filter out invariant sites
 
 __Inputs__: 
-print("Inputs:")
 * Filepath to hard-calls MatrixTable from step 1: `${MT_HARDCALLS}`
 * Filepath to the target intervals file (see below for expected format): `${TARGET_INTERVALS}`
 * Filepath to the padded target intervals file: `${PADDED_TARGET_INTERVALS}`
@@ -69,7 +68,6 @@ We have included an example target intervals file, target intervals file with 50
 ### Step 3: Initial Sample QC
 
 __Inputs__: 
-print("Inputs:")
 * Filepath to hard-calls MatrixTable from step 1: `${MT_HARDCALLS}`
 * Filepath to the set of variants remaining after step 2 filtering: `${INITIAL_VARIANT_LIST}`
 * Filepath to the target intervals file (see below for expected format): `${TARGET_INTERVALS}`

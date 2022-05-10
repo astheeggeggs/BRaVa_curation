@@ -86,7 +86,7 @@ __Outputs__:
 This step should be run separately for each superpopulation (MAF differences across superpopulations can throw off the $F$ statistic).
 `05_0_impute_sex.py`
 
-# Step 7: Determine related samples
+### Step 7: Determine related samples
 If you have a single homogeneous population, you can use IBD estimation with the following script:
 `06_0_ibd.py`
 

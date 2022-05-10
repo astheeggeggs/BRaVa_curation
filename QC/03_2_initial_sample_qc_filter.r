@@ -31,20 +31,7 @@ df_summary_count <- data.table(
 				nrow(filter(df, PCT_CHIMERAS >= T_pct_chimeras)),
 				nrow(filter(df, dp_stats.mean <= T_dpMean)),
 				nrow(filter(df, gq_stats.mean <= T_gqMean)),
-				nrow(df_out)),
-	"Bipolar Cases" = c(nrow(df %>% filter(PHENOTYPE_COARSE == "Bipolar Disorder")),
-			    nrow(filter(df, call_rate <= T_sample_callRate) %>% filter(PHENOTYPE_COARSE == "Bipolar Disorder")),
-				nrow(filter(df, PCT_CONTAMINATION >= T_pct_contamination) %>% filter(PHENOTYPE_COARSE == "Bipolar Disorder")),
-				nrow(filter(df, PCT_CHIMERAS >= T_pct_chimeras) %>% filter(PHENOTYPE_COARSE == "Bipolar Disorder")),
-				nrow(filter(df, dp_stats.mean <= T_dpMean) %>% filter(PHENOTYPE_COARSE == "Bipolar Disorder")),
-				nrow(filter(df, gq_stats.mean <= T_gqMean) %>% filter(PHENOTYPE_COARSE == "Bipolar Disorder")),
-				length(which(df_out$s %in% (df %>% filter(PHENOTYPE_COARSE == "Bipolar Disorder"))$s))),
-	"Controls" = c(nrow(df %>% filter(PHENOTYPE_COARSE == "Control")),
-			    nrow(filter(df, call_rate <= T_sample_callRate) %>% filter(PHENOTYPE_COARSE == "Control")),
-				nrow(filter(df, PCT_CONTAMINATION >= T_pct_contamination) %>% filter(PHENOTYPE_COARSE == "Control")),
-				nrow(filter(df, PCT_CHIMERAS >= T_pct_chimeras) %>% filter(PHENOTYPE_COARSE == "Control")),
-				nrow(filter(df, dp_stats.mean <= T_dpMean) %>% filter(PHENOTYPE_COARSE == "Control")),
-				nrow(filter(df, gq_stats.mean <= T_gqMean) %>% filter(PHENOTYPE_COARSE == "Control")),
-				length(which(df_out$s %in% (df %>% filter(PHENOTYPE_COARSE == "Control"))$s))))
+				nrow(df_out))
+	)
 
-fwrite(df_summary_count, file='../../samples_BipEx/03_sample_count.tsv', quote=FALSE, row.names=FALSE, col.names=FALSE, sep='\t')
+fwrite(df_summary_count, file=SAMPLE_SUMMARY_COUNT, quote=FALSE, row.names=FALSE, col.names=FALSE, sep='\t')

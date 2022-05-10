@@ -12,7 +12,7 @@ print("Inputs:")
 print('INPUT_VCF; vcf input: ', INPUT_VCF)
 
 print("Outputs:")
-print('OUTPUT_MATRIX_TABLE; output matrix table: ', RAW_MT)
+print('RAW_MT; output matrix table: ', RAW_MT)
 
 hl.init(default_reference=REFERENCE)
 

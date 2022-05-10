@@ -90,7 +90,24 @@ When you are happy with the proposed cutoffs, run `03_2_initial_sample_filter.r`
 ## Step 4: High Quality Common Variant Subset
 `04_0_export_plink.py`
 
+## 04_prune_genotyped_snps.sh
+
+*Inputs*
+
+- UKBB plink files from UK Biobank
+
+*Outputs*
+
+- `ukb_snp_chrX_pruned.prune.{in, out}`
+
+This first step takes the X chromosome, and LD prunes to define a collection of pseudo-independent SNPs for subsequent F-statistic evaluation. We filter to the collection of samples with exome sequence data available to speed things.
+
 ## Step 5: Determine superpopulation ancestry labels
+
+There are a few options here. If genotype data is available, if WGS is available, or if only WES data is available.
+
+### Genotype data is available
+
 We provide an R script to assign 1000G ancestry labels using genotype data, using the UK Biobank data as an example.
 
 Here we make use of the OADP projection to guard against shrinking PCs to 0, though in the case of projection of the first four PCs which will be used downstream for superpopulation assignment, this is likely overkill as the shrinkage is not severe in the first few PCs.
@@ -100,13 +117,20 @@ Here we make use of the OADP projection to guard against shrinking PCs to 0, tho
 * Assign superpopulation labels to the 1000G data, based on the 1000G ped file.
 * Create a random forest classifier using the `randomForest` library in R, and write out the results. We used a threshold of 0.99 to assign labels to UK Biobank samples. Samples that weren't clearly assigned to any cluster were labelled 'unsure'.
 
-
-
 `05_estimate_superpopulation.r`
+
+### Only WES data is available
+
+Run as above, but filtering to the set of SNPs present in both the WES/WGS and 1000G data first.
 
 ## Step 6: Sex imputation
 This step should be run separately for each superpopulation (MAF differences across superpopulations can throw off the $F$ statistic).
-`06_0_impute_sex.py`
+
+There are two options - if genotype data is available, or if it isn't. But the code is the same, just applied to either LD-pruned genotyping or sequencing data.
+
+To do this we read in the pruned sex chromosome data, and determine the F-statistic for samples using the X chromosome, and check the number of non-missing allele counts on the Y.
+
+Plot the output of `06_impute_sex.py`. We plot the distribution of the F-statistic on the X, and define a cutoff for sex labelling. We also plot the X F-statistic against the number of reads on the Y chromosome. After adding genetically defined sex, we compare to the self assigned sex in the phenotype file and remove mismatches.
 
 ## Step 7: Determine related samples
 If you have a single homogeneous population, you can use IBD estimation with the following script:

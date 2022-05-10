@@ -57,7 +57,7 @@ __Inputs__:
 * Filepath to low-complexity regions intervals file: `${LCRs}`
 
 __Outputs__:
-* Filepath to place initial QC metrics for downstream plotting: `${INITIAL_VARIANT_QC_FILE}$
+* Filepath to place initial QC metrics for downstream plotting: `${INITIAL_VARIANT_QC_FILE}`
 * Filepath to place the set of variants remaining after step 2 filtering: `${INITIAL_VARIANT_LIST}`
 
 `python 02_prefilter_variants.py ${MT_HARDCALLS} ${TARGET_INTERVALS} ${PADDED_TARGET_INTERVALS} ${LCRs} ${INITIAL_VARIANT_QC_FILE} ${INITIAL_VARIANT_LIST}`

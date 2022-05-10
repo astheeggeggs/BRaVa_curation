@@ -1,11 +1,11 @@
 library(data.table)
 # Plotting functions:
-source('r_functions_and_parameters/pretty_plotting.r')
+source('utils/pretty_plotting.r')
 
 # Thresholds and plotting file locations defined in r_options_BipEx.r
 # These are currently set at values that made sense for UKBB 200k exomes.
 # Please these numbers based on what the plotting below looks like!
-source("r_functions_and_parameters/r_options_BipEx.r")
+source("utils/r_options.r")
 
 # Inputs 
 # INITIAL_SAMPLE_QC_FILE (output from 03_0_initial_sample_qc.py)

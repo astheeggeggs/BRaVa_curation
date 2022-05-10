@@ -1,6 +1,6 @@
 library(dplyr)
 library(data.table)
-source("r_functions_and_parameters/r_options_BipEx.r")
+source("utils/r_options.r")
 
 # Run the plotting again to ensure that the thresholds are as in the plots.
 source("03_initial_sample_qc_plot.r")

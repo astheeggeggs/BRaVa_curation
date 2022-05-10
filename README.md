@@ -65,6 +65,10 @@ __Outputs__:
 
 We have included an example target intervals file, target intervals file with 50bp padding and LCRs file to show the expected format.
 
+Target intervals file: `example_inputs/ice_coding_v1_targets.interval_list.gz`
+Padded target intervals file: `example_inputs/ice_coding_v1_padded_targets.interval_list.gz`
+LCRs file: `example_inputs/LCR-hs38.bed.gz`
+
 ### Step 3: Initial Sample QC
 
 __Inputs__: 

@@ -91,14 +91,26 @@ When you are happy with the proposed cutoffs, run `03_2_initial_sample_filter.r`
 `04_0_export_plink.py`
 
 ## Step 5: Determine superpopulation ancestry labels
+We provide an R script to assign 1000G ancestry labels using genotype data, using the UK Biobank data as an example.
+
+Here we make use of the OADP projection to guard against shrinking PCs to 0, though in the case of projection of the first four PCs which will be used downstream for superpopulation assignment, this is likely overkill as the shrinkage is not severe in the first few PCs.
+
+* Combine the chromosome data together into a single plink file from R (as this is required by `bigsnpr` to perform the projections) in the data that we wish to project (UKBB data in this example).
+* Download the 1000G data, and project the UK Biobank samples onto the PC space defined by 1000G.
+* Assign superpopulation labels to the 1000G data, based on the 1000G ped file.
+* Create a random forest classifier using the `randomForest` library in R, and write out the results. We used a threshold of 0.99 to assign labels to UK Biobank samples. Samples that weren't clearly assigned to any cluster were labelled 'unsure'.
+
+
+
+`05_estimate_superpopulation.r`
 
 ## Step 6: Sex imputation
 This step should be run separately for each superpopulation (MAF differences across superpopulations can throw off the $F$ statistic).
-`05_0_impute_sex.py`
+`06_0_impute_sex.py`
 
 ## Step 7: Determine related samples
 If you have a single homogeneous population, you can use IBD estimation with the following script:
-`06_0_ibd.py`
+`07_0_ibd.py`
 
 If you have multiple superpopulations, you should use PC-relate to identify related samples with the following script:
-`06_0_pc_relate.py`
+`07_0_pc_relate.py`

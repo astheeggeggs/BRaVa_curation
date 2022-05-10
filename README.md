@@ -1,4 +1,4 @@
-# Templates for WES QC pipeline
+# Example WES QC pipeline
 
 A collection of scripts to use as a starting point for running quality control on whole exome sequencing datasets using Hail.
 
@@ -6,8 +6,7 @@ Throughout, we assume that the reference geneome is GRCh38. If this isn't the re
 
 These scripts assume that you have access to a large number of cores to run them on. If not, you will need to split (e.g. by chromosome) and run scripts in parallel. Examples of this procedure and intermediate plotting (as well as scripts for submitting jobs to a HPC) for very similar steps to these can be found in [this](https://github.com/astheeggeggs/SAIGE_gene_munging/tree/main/QC_scripts) repository.
 
-## Pipeline
-### Step 0: Create an initial Hail MatrixTable
+## Step 0: Create an initial Hail MatrixTable
 Read in joint called VCF and write to Hail MatrixTable format
 
 __Inputs__: 
@@ -18,7 +17,7 @@ __Outputs__:
 
 `python 00_load_and_write_vcf_as_mt.py ${INPUT_VCF} ${RAW_MT}`
 
-### Step 1: Genotype QC
+## Step 1: Genotype QC
 * Remove sites with a large number of alleles (>6)
 * Filter genotypes based on depth, likelihood, and allele balance.
   * If homozygous reference, at least one of:
@@ -39,11 +38,11 @@ __Inputs__:
 
 __Outputs__:
 * Filepath to place the output MatrixTable: `${MT}`
-* Filepath to place the output hard-calls MatrixTable: `$MT_HARDCALLS`
+* Filepath to place the output hard-calls MatrixTable: `${MT_HARDCALLS}`
 
 `python 01_filterGT.py ${RAW_MT} ${MT} ${MT_HARDCALLS}`
 
-### Step 2: Initial Variant QC
+## Step 2: Initial Variant QC
 
 Remove variants that either:
 * Fall in a low complexity region
@@ -58,14 +57,18 @@ __Inputs__:
 * Filepath to low-complexity regions intervals file: `${LCRs}`
 
 __Outputs__:
-* Filepath to place initial QC metrics for downstream plotting: `${INITIAL_VARIANT_QC_FILE}$
+* Filepath to place initial QC metrics for downstream plotting: `${INITIAL_VARIANT_QC_FILE}`
 * Filepath to place the set of variants remaining after step 2 filtering: `${INITIAL_VARIANT_LIST}`
 
 `python 02_prefilter_variants.py ${MT_HARDCALLS} ${TARGET_INTERVALS} ${PADDED_TARGET_INTERVALS} ${LCRs} ${INITIAL_VARIANT_QC_FILE} ${INITIAL_VARIANT_LIST}`
 
 We have included an example target intervals file, target intervals file with 50bp padding and LCRs file to show the expected format.
 
-### Step 3: Initial Sample QC
+Target intervals file: `example_inputs/ice_coding_v1_targets.interval_list.gz`
+Padded target intervals file: `example_inputs/ice_coding_v1_padded_targets.interval_list.gz`
+LCRs file: `example_inputs/LCR-hs38.bed.gz`
+
+## Step 3: Initial Sample QC
 
 __Inputs__: 
 * Filepath to hard-calls MatrixTable from step 1: `${MT_HARDCALLS}`
@@ -77,16 +80,16 @@ __Outputs__:
 
 `python 03_0_initial_sample_qc.py ${MT_HARDCALLS} ${INITIAL_VARIANT_LIST} ${INITIAL_SAMPLE_QC_FILE}`
 
-### Step 4: High Quality Common Variant Subset
+## Step 4: High Quality Common Variant Subset
 `04_0_export_plink.py`
 
-### Step 5: Determine superpopulation ancestry labels
+## Step 5: Determine superpopulation ancestry labels
 
-### Step 6: Sex imputation
+## Step 6: Sex imputation
 This step should be run separately for each superpopulation (MAF differences across superpopulations can throw off the $F$ statistic).
 `05_0_impute_sex.py`
 
-### Step 7: Determine related samples
+## Step 7: Determine related samples
 If you have a single homogeneous population, you can use IBD estimation with the following script:
 `06_0_ibd.py`
 

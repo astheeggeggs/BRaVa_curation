@@ -38,7 +38,7 @@ __Inputs__:
 
 __Outputs__:
 * Filepath to place the output MatrixTable: `${MT}`
-* Filepath to place the output hard-calls MatrixTable: `$MT_HARDCALLS`
+* Filepath to place the output hard-calls MatrixTable: `${MT_HARDCALLS}`
 
 `python 01_filterGT.py ${RAW_MT} ${MT} ${MT_HARDCALLS}`
 

@@ -38,7 +38,7 @@ __Inputs__:
 * Filepath to place the MatrixTable output from step 0: `${RAW_MT}`
 
 __Outputs__:
-* Filepath to place the output MatrixTable: `$MT`
+* Filepath to place the output MatrixTable: `${MT}`
 * Filepath to place the output hard-calls MatrixTable: `$MT_HARDCALLS`
 
 `python 01_filterGT.py ${RAW_MT} ${MT} ${MT_HARDCALLS}`
@@ -55,11 +55,11 @@ __Inputs__:
 * Filepath to hard-calls MatrixTable from step 1: `${MT_HARDCALLS}`
 * Filepath to the target intervals file (see below for expected format): `${TARGET_INTERVALS}`
 * Filepath to the padded target intervals file: `${PADDED_TARGET_INTERVALS}`
-* Filepath to low-complexity regions intervals file: `${LCRs}
+* Filepath to low-complexity regions intervals file: `${LCRs}`
 
 __Outputs__:
-* Filepath to place initial QC metrics for downstream plotting: `$INITIAL_VARIANT_QC_FILE$
-* Filepath to place the set of variants remaining after step 2 filtering: `$INITIAL_VARIANT_LIST
+* Filepath to place initial QC metrics for downstream plotting: `${INITIAL_VARIANT_QC_FILE}$
+* Filepath to place the set of variants remaining after step 2 filtering: `${INITIAL_VARIANT_LIST}`
 
 `python 02_prefilter_variants.py ${MT_HARDCALLS} ${TARGET_INTERVALS} ${PADDED_TARGET_INTERVALS} ${LCRs} ${INITIAL_VARIANT_QC_FILE} ${INITIAL_VARIANT_LIST}`
 
@@ -73,7 +73,7 @@ __Inputs__:
 * Filepath to the target intervals file (see below for expected format): `${TARGET_INTERVALS}`
 
 __Outputs__:
-* Filepath to place initial sample QC metrics for downstream plotting: `$INITIAL_SAMPLE_QC_FILE$
+* Filepath to place initial sample QC metrics for downstream plotting: `${INITIAL_SAMPLE_QC_FILE}$`
 
 `python 03_0_initial_sample_qc.py ${MT_HARDCALLS} ${INITIAL_VARIANT_LIST} ${INITIAL_SAMPLE_QC_FILE}`
 

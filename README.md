@@ -9,10 +9,10 @@ These scripts assume that you have access to a large number of cores to run them
 ## Step 0: Create an initial Hail MatrixTable
 Read in joint called VCF and write to Hail MatrixTable format
 
-__Inputs__: 
+___Inputs___: 
 * Filepath to the jointcalled .vcf to input: `${INPUT_VCF}`
 
-__Outputs__: 
+___Outputs___: 
 * Filepath to place the output MatrixTable: `${RAW_MT}`
 
 `python 00_load_and_write_vcf_as_mt.py ${INPUT_VCF} ${RAW_MT}`
@@ -33,10 +33,10 @@ __Outputs__:
     * Reference phred-scaled genotype posterior < 20
     * Depth < 10
 
-__Inputs__: 
+___Inputs___:
 * Filepath to place the MatrixTable output from step 0: `${RAW_MT}`
 
-__Outputs__:
+___Outputs___:
 * Filepath to place the output MatrixTable: `${MT}`
 * Filepath to place the output hard-calls MatrixTable: `${MT_HARDCALLS}`
 
@@ -50,13 +50,13 @@ Remove variants that either:
 * Fall outside of padded target intervals (we recommend 50bp padding)
 * Filter out invariant sites
 
-__Inputs__: 
+___Inputs___: 
 * Filepath to hard-calls MatrixTable from step 1: `${MT_HARDCALLS}`
 * Filepath to the target intervals file (see below for expected format): `${TARGET_INTERVALS}`
 * Filepath to the padded target intervals file: `${PADDED_TARGET_INTERVALS}`
 * Filepath to low-complexity regions intervals file: `${LCRs}`
 
-__Outputs__:
+___Outputs___:
 * Filepath to place initial QC metrics for downstream plotting: `${INITIAL_VARIANT_QC_FILE}`
 * Filepath to place the set of variants remaining after step 2 filtering: `${INITIAL_VARIANT_LIST}`
 
@@ -72,12 +72,12 @@ LCRs file: `example_inputs/LCR-hs38.bed.gz`
 
 In this step, we run the sample QC function in hail to determine sample qc metrics
 
-__Inputs__: 
+___Inputs___:  
 * Filepath to hard-calls MatrixTable from step 1: `${MT_HARDCALLS}`
 * Filepath to the set of variants remaining after step 2 filtering: `${INITIAL_VARIANT_LIST}`
 * Filepath to the target intervals file (see below for expected format): `${TARGET_INTERVALS}`
 
-__Outputs__:
+___Outputs___:
 * Filepath to place initial sample QC metrics for downstream plotting: `${INITIAL_SAMPLE_QC_FILE}$`
 
 `python 03_0_initial_sample_qc.py ${MT_HARDCALLS} ${INITIAL_VARIANT_LIST} ${INITIAL_SAMPLE_QC_FILE}`
@@ -90,15 +90,7 @@ When you are happy with the proposed cutoffs, run `03_2_initial_sample_filter.r`
 ## Step 4: High Quality Common Variant Subset
 `04_0_export_plink.py`
 
-## 04_prune_genotyped_snps.sh
-
-*Inputs*
-
-- UKBB plink files from UK Biobank
-
-*Outputs*
-
-- `ukb_snp_chrX_pruned.prune.{in, out}`
+`04_prune_genotyped_snps.sh`
 
 This first step takes the X chromosome, and LD prunes to define a collection of pseudo-independent SNPs for subsequent F-statistic evaluation. We filter to the collection of samples with exome sequence data available to speed things.
 

@@ -159,37 +159,39 @@ Here we make use of the OADP projection to guard against shrinking PCs to 0, tho
 
 ### Only WES data is available
 
-Run as above, but filtering to the set of SNPs present in both the WES/WGS and 1000G data first.
+Run as above, but filtering to the set of SNPs present in both the WES and 1000G data first.
 
 ## Step 6: Sex imputation
 This step should be run separately for each superpopulation (MAF differences across superpopulations can throw off the _F_ statistic).
 
-There are two options: if genotype data is available, or if it isn't. The code is the same, just applied to either LD-pruned genotyping (output of `04_prune_genotyped_snps.sh`) or LD pruned sequencing data after filtering to high quality variants (output of `04_1_prune_sequencing_snps.sh`).
+There are two options: 
+
+1. Genotype data (i.e. imputed SNP chip data) is available
+2. Genotype data isn't available.
+
+The code is the same, just applied to either LD-pruned genotyping (output of `04_prune_genotyped_snps.sh`) or LD pruned sequencing data after filtering to high quality variants (output of `04_1_prune_sequencing_snps.sh`).
 
 To do this we read in the pruned sex chromosome data, and determine the _F_-statistic for samples using the X chromosome, and check the number of non-missing allele counts on the Y.
 
-print("Inputs:")
-print('MT_HARDCALLS; input hard calls matrix table: ', MT_HARDCALLS)
-print('INITIAL_SAMPLES; set of initial samples output from 03_01_initial_sample_qc_filter.r: ', INITIAL_SAMPLES)
-print('PRUNED_CHRX_VARIANTS; set of LD-pruned high-quality variants on the X: ', PRUNED_CHRX_VARIANTS)
-print('PHENOTYPES_TABLE; a collection of sample annotations, which includes self-assigned sex or gender: ', PHENOTYPES_TABLE)
+___Inputs___:
+* Filepath to hard-calls MatrixTable from step 1: `${MT_HARDCALLS}`
+* Filepath to the list of samples remaining after `03_2_initial_sample_filter.r`: `${SAMPLE_LIST_INITIAL_QC}`
+* Filepath to the set of LD-pruned high-quality variants on the X (output from either `04_prune_genotyped_snps.sh`, or `04_1_prune_sequencing_snps.sh`):  `${PRUNED_CHRX_VARIANTS}`.
+* Filepath to the SAMPLE_TABLE (phenotype information for the samples saved as a HailTable), which includes self-assigned sex or gender a ones of the annotations, with annotation name `reported_sex` present: `${SAMPLE_TABLE}`.
 
-print("Outputs:")
-print('IMPUTESEX_TABLE; output .tsv file to plot imputed sex information : ', IMPUTESEX_TABLE)
-print('IMPUTESEX_FILE; output .tsv file to use to count mismatches at this step for a summary table: ', IMPUTESEX_FILE)
-print('Y_NCALLED; output .tsv file of calls on the Y: ', Y_NCALLED)
+___Outputs___:
+* Filepath to output .tsv file used to plot imputed sex information in the next step: `${IMPUTESEX_TABLE}`
+* Filepath to output .tsv file used to count the mismatches as this step fro a summary table: `${IMPUTESEX_FILE}`
+* Filepath to output .tsv file of the number of calls on the Y: `${Y_NCALLED}`
 
 Plot the output of `06_impute_sex.py`. We plot the distribution of the _F_-statistic on the X, and define a cutoff for sex labelling. We also plot the X _F_-statistic against the number of reads on the Y chromosome. After adding genetically defined sex, we compare to the self assigned sex in the phenotype file and remove mismatches.
 
-parser <- ArgumentParser()
-parser$add_argument("--impute_sex_table", required=TRUE, help="Path to IMPUTESEX_TABLE from 06_0_impute_sex.py")
-parser$add_argument("--y_ncalled", required=TRUE, help="Path to Y_NCALLED from 06_0_impute_sex.py")
-parser$add_argument("--sexcheck_list", required=TRUE, help="Path to output file containing sex swaps")
-args <- parser$parse_args()
+___Inputs___:
+* Filepath to .tsv file containing imputed sex information from the previous step (`${IMPUTESEX_TABLE}`): `--impute_sex_table`
+* Filepath to .tsv file containing the number of calls on the Y from the previous step (`${Y_NCALLED}`): `--y_ncalled`
 
-IMPUTESEX_FILE <- args$impute_sex_table
-Y_NCALLED_FILE <- args$y_ncalled
-SEXCHECK_LIST <- args$sexcheck_list
+___Outputs___:
+* Filepath to output .tsv file containing the samples to be removed due to sex swaps: `--sexcheck_list`
 
 ## Step 7: Determine related samples
 
@@ -197,8 +199,8 @@ If you have a single homogeneous population, you can use IBD estimation with the
 `07_0_ibd.py`
 
 print("Inputs:")
-print('MT_HARDCALLS; input hard calls matrix table: ', MT_HARDCALLS)
-print('INITIAL_SAMPLES; set of initial samples output from 03_01_initial_sample_qc_filter.r: ', INITIAL_SAMPLES)
+* Filepath to hard-calls MatrixTable from step 1: `${MT_HARDCALLS}`
+* Filepath to the list of samples remaining after `03_2_initial_sample_filter.r`: `${SAMPLE_LIST_INITIAL_QC}`
 print('PRUNED_VARIANTS; set of LD-pruned high-quality variants in the autosomes: ', PRUNED_VARIANTS)
 
 print("Outputs:")
@@ -208,8 +210,8 @@ If you have multiple superpopulations, you should use PC-relate to identify rela
 `07_0_pc_relate.py`
 
 print("Inputs:")
-print('MT_HARDCALLS; input hard calls matrix table: ', MT_HARDCALLS)
-print('INITIAL_SAMPLES; set of initial samples output from 03_01_initial_sample_qc_filter.r: ', INITIAL_SAMPLES)
+* Filepath to hard-calls MatrixTable from step 1: `${MT_HARDCALLS}`
+* Filepath to the list of samples remaining after `03_2_initial_sample_filter.r`: `${SAMPLE_LIST_INITIAL_QC}`
 print('PRUNED_VARIANTS; set of LD-pruned high-quality variants in the autosomes: ', PRUNED_VARIANTS)
 
 print("Outputs:")

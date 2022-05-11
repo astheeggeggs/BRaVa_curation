@@ -88,15 +88,53 @@ We then create a series of plots, and define an empirical hard cutoff for a seri
 When you are happy with the proposed cutoffs, run `03_2_initial_sample_filter.r`.
 
 ## Step 4: High Quality Common Variant Subset
-`04_0_export_plink.py`
 
-`04_prune_genotyped_snps.sh`
+There are a few options here
 
-This first step takes the X chromosome, and LD prunes to define a collection of pseudo-independent SNPs for subsequent F-statistic evaluation. We filter to the collection of samples with exome sequence data available to speed things.
+### Genotype data is available
+
+This first step takes the X chromosome, and LD prunes to define a collection of pseudo-independent SNPs for subsequent _F_-statistic evaluation. We filter to the collection of samples with exome sequence data available to speed things.
+
+Here's a bash script to do this using plink (assuming that plink is installed and in your `$PATH`). It's just a wrapper to a plink command.
+
+___Inputs___:
+* Filepath to .bed for chromosome X: `${GENO_X_BED}`
+* Filepath to .bim for chromosome X: `${GENO_X_BIM}`
+* Filepath to .fam for chromosome X: `${GENO_X_FAM}`
+* Filepath to sample information (aka phenotype inforamtion) for the samples that are sequenced: `${SAMPLE_INFORMATION}`
+
+___Outputs___:
+* Prefix for high-quality pruned common chromosome X variant plink files: `${PRUNED_X_PLINK}`
+
+`bash 04_prune_genotyped_snps.sh ${GENO_X_BED} ${GENO_X_BIM} ${GENO_X_FAM} ${SAMPLE_INFORMATION} ${PRUNED_X_PLINK}`
+
+### Only WES data is available
+
+If only WES data is available, you'll need to create a set of high quality SNPs, and then LD-prune them. The first step is to spit out a high quality set of variants to a set of plink files.
+
+___Inputs___:
+* Filepath to hard-calls MatrixTable from step 1: `${MT_HARDCALLS}`
+* Filepath to the list of samples remaining after `03_2_initial_sample_filter.r`: `${SAMPLE_LIST_INITIAL_QC}`
+* Filepath to the set of variants remaining after step 2 filtering: `${INITIAL_VARIANT_LIST}`
+* Filepath to set of high-LD regions for removal: `${HIGH_LD_INTERVALS}`
+
+___Outputs___:
+* Prefix for high-quality common variant plink files: `${PLINK_FILES}`
+
+`python 04_0_export_plink.py ${MT_HARDCALLS} ${SAMPLE_LIST_INITIAL_QC} ${INITIAL_VARIANT_LIST} ${HIGH_LD_INTERVALS} ${PLINK_FILES}`
+
+Next, take these plink files and LD-prune them. The following bash script is a simple wrapper to call plink a few times. Again, we're assuming that plink is installed and in your `$PATH`.
+
+___Inputs___:
+* Prefix for high-quality common variant plink files: `${PLINK_FILES}`
+
+`bash 04_1_prune_sequencing_snps.sh ${PLINK_FILES}`
+
+The outputs of step 4 (if genotype data is available and if only WES data is available) feed into steps 5 and 6.
 
 ## Step 5: Determine superpopulation ancestry labels
 
-There are a few options here. If genotype data is available, if WGS is available, or if only WES data is available.
+There are a few options here. If genotype data is available, or if only WES data is available.
 
 ### Genotype data is available
 
@@ -116,17 +154,63 @@ Here we make use of the OADP projection to guard against shrinking PCs to 0, tho
 Run as above, but filtering to the set of SNPs present in both the WES/WGS and 1000G data first.
 
 ## Step 6: Sex imputation
-This step should be run separately for each superpopulation (MAF differences across superpopulations can throw off the $F$ statistic).
+This step should be run separately for each superpopulation (MAF differences across superpopulations can throw off the _F_ statistic).
 
-There are two options - if genotype data is available, or if it isn't. But the code is the same, just applied to either LD-pruned genotyping or sequencing data.
+There are two options: if genotype data is available, or if it isn't. The code is the same, just applied to either LD-pruned genotyping (output of `04_prune_genotyped_snps.sh`) or LD pruned sequencing data after filtering to high quality variants (output of `04_1_prune_sequencing_snps.sh`).
 
-To do this we read in the pruned sex chromosome data, and determine the F-statistic for samples using the X chromosome, and check the number of non-missing allele counts on the Y.
+To do this we read in the pruned sex chromosome data, and determine the _F_-statistic for samples using the X chromosome, and check the number of non-missing allele counts on the Y.
 
-Plot the output of `06_impute_sex.py`. We plot the distribution of the F-statistic on the X, and define a cutoff for sex labelling. We also plot the X F-statistic against the number of reads on the Y chromosome. After adding genetically defined sex, we compare to the self assigned sex in the phenotype file and remove mismatches.
+print("Inputs:")
+print('MT_HARDCALLS; input hard calls matrix table: ', MT_HARDCALLS)
+print('INITIAL_SAMPLES; set of initial samples output from 03_01_initial_sample_qc_filter.r: ', INITIAL_SAMPLES)
+print('PRUNED_CHRX_VARIANTS; set of LD-pruned high-quality variants on the X: ', PRUNED_CHRX_VARIANTS)
+print('PHENOTYPES_TABLE; a collection of sample annotations, which includes self-assigned sex or gender: ', PHENOTYPES_TABLE)
+
+print("Outputs:")
+print('IMPUTESEX_TABLE; output .tsv file to plot imputed sex information : ', IMPUTESEX_TABLE)
+print('IMPUTESEX_FILE; output .tsv file to use to count mismatches at this step for a summary table: ', IMPUTESEX_FILE)
+print('Y_NCALLED; output .tsv file of calls on the Y: ', Y_NCALLED)
+
+Plot the output of `06_impute_sex.py`. We plot the distribution of the _F_-statistic on the X, and define a cutoff for sex labelling. We also plot the X _F_-statistic against the number of reads on the Y chromosome. After adding genetically defined sex, we compare to the self assigned sex in the phenotype file and remove mismatches.
+
+parser <- ArgumentParser()
+parser$add_argument("--impute_sex_table", required=TRUE, help="Path to IMPUTESEX_TABLE from 06_0_impute_sex.py")
+parser$add_argument("--y_ncalled", required=TRUE, help="Path to Y_NCALLED from 06_0_impute_sex.py")
+parser$add_argument("--sexcheck_list", required=TRUE, help="Path to output file containing sex swaps")
+args <- parser$parse_args()
+
+IMPUTESEX_FILE <- args$impute_sex_table
+Y_NCALLED_FILE <- args$y_ncalled
+SEXCHECK_LIST <- args$sexcheck_list
 
 ## Step 7: Determine related samples
+
 If you have a single homogeneous population, you can use IBD estimation with the following script:
 `07_0_ibd.py`
 
+print("Inputs:")
+print('MT_HARDCALLS; input hard calls matrix table: ', MT_HARDCALLS)
+print('INITIAL_SAMPLES; set of initial samples output from 03_01_initial_sample_qc_filter.r: ', INITIAL_SAMPLES)
+print('PRUNED_VARIANTS; set of LD-pruned high-quality variants in the autosomes: ', PRUNED_VARIANTS)
+
+print("Outputs:")
+print('IBD_OUTPUT; output .tsv file with IBD information for plotting: ', IBD_OUTPUT)
+
 If you have multiple superpopulations, you should use PC-relate to identify related samples with the following script:
 `07_0_pc_relate.py`
+
+print("Inputs:")
+print('MT_HARDCALLS; input hard calls matrix table: ', MT_HARDCALLS)
+print('INITIAL_SAMPLES; set of initial samples output from 03_01_initial_sample_qc_filter.r: ', INITIAL_SAMPLES)
+print('PRUNED_VARIANTS; set of LD-pruned high-quality variants in the autosomes: ', PRUNED_VARIANTS)
+
+print("Outputs:")
+print('PC_RELATE_OUTPUT; output .tsv file with pc-relate information for plotting: ', PC_RELATE_OUTPUT)
+
+I still have a few steps to include. 
+
+final_variant_qc
+final_sample_qc
+creation of a final set of PCs to include in association analyses
+create and check a finalised curated matrix table
+spit out a vcf, plink, or bgen file from the matrixtable for downstream analyses that have input format requirements

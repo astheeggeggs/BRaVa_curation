@@ -184,6 +184,8 @@ ___Outputs___:
 * Filepath to output .tsv file used to count the mismatches as this step fro a summary table: `${IMPUTESEX_FILE}`
 * Filepath to output .tsv file of the number of calls on the Y: `${Y_NCALLED}`
 
+`python 06_0_impute_sex.py ${MT_HARDCALLS} ${SAMPLE_LIST_INITIAL_QC} ${PRUNED_CHRX_VARIANTS} ${SAMPLE_TABLE} ${IMPUTESEX_TABLE} ${IMPUTESEX_FILE} ${Y_NCALLED}`
+
 Plot the output of `06_impute_sex.py`. We plot the distribution of the _F_-statistic on the X, and define a cutoff for sex labelling. We also plot the X _F_-statistic against the number of reads on the Y chromosome. After adding genetically defined sex, we compare to the self assigned sex in the phenotype file and remove mismatches.
 
 ___Inputs___:
@@ -192,6 +194,8 @@ ___Inputs___:
 
 ___Outputs___:
 * Filepath to output .tsv file containing the samples to be removed due to sex swaps: `--sexcheck_list`
+
+`Rscript 06_1_impute_sex_plot.r ----impute_sex_table ${IMPUTESEX_TABLE} --y-ncalled ${Y_NCALLED}`
 
 ## Step 7: Determine related samples
 
@@ -206,7 +210,15 @@ ___Outputs___:
 * Filepath to output .tsv to contain IBD information for plotting: `${IBD_OUTPUT}`
 * Filepath to output .tsv file set of related samples using (almost) maximally independent set: `${SAMPLE_LIST_RELATED}`
 
-`python 07_0_ibd.py`
+`python 07_0_ibd.py ${MT_HARDCALLS} ${SAMPLE_LIST_INITIAL_QC} ${PRUNED_VARIANTS} ${IBD_OUTPUT} ${SAMPLE_LIST_RELATED}`
+
+Plot the resultant IBD estimates and colour code them:
+
+___Inputs___:
+* Filepath to the IBD file output from `07_0_ibd.py` (`${IBD_OUTPUT}`): `--ibd_file`
+* PI HAT threshold to use for 'related' (default: 0.2): `--ibd_threshold`
+
+`Rscript 06_1_impute_sex_plot.r --ibd_file ${IBD_OUTPUT} --ibd_threshold 0.2`
 
 If you have multiple superpopulations, you should use PC-relate to identify related samples Hail's implementation of PC-relate using the `pc_relate` method.
 
@@ -218,7 +230,7 @@ ___Outputs___:
 * Filepath to output .tsv to contain PC-relate information for plotting: `${PC_RELATE_OUTPUT}`
 * Filepath to output .tsv file set of related samples using (almost) maximally independent set: `${SAMPLE_LIST_RELATED}`
 
-`07_0_pc_relate.py`
+`python 07_0_pc_relate.py ${MT_HARDCALLS} ${SAMPLE_LIST_INITIAL_QC} ${PC_RELATE_OUTPUT} ${SAMPLE_LIST_RELATED}`
 
 I still have a few steps to include. 
 

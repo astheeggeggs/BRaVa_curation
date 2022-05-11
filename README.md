@@ -195,32 +195,35 @@ ___Outputs___:
 
 ## Step 7: Determine related samples
 
-If you have a single homogeneous population, you can use IBD estimation with the following script:
-`07_0_ibd.py`
+If you have a single homogeneous population, you can use IBD estimation using Hail's `identity_by_descent` method. 
 
-print("Inputs:")
+___Inputs___:
 * Filepath to hard-calls MatrixTable from step 1: `${MT_HARDCALLS}`
 * Filepath to the list of samples remaining after `03_2_initial_sample_filter.r`: `${SAMPLE_LIST_INITIAL_QC}`
-print('PRUNED_VARIANTS; set of LD-pruned high-quality variants in the autosomes: ', PRUNED_VARIANTS)
+* Filepath to a collection of pruned variants to filter to before evalauting IBD (`${PLINK_FILES}.keep.variant_list`, output from `04_1_prune_sequencing_snps.sh`): `${PRUNED_VARIANTS}`
 
-print("Outputs:")
-print('IBD_OUTPUT; output .tsv file with IBD information for plotting: ', IBD_OUTPUT)
+___Outputs___:
+* Filepath to output .tsv to contain IBD information for plotting: `${IBD_OUTPUT}`
+* Filepath to output .tsv file set of related samples using (almost) maximally independent set: `${SAMPLE_LIST_RELATED}`
 
-If you have multiple superpopulations, you should use PC-relate to identify related samples with the following script:
+`python 07_0_ibd.py`
+
+If you have multiple superpopulations, you should use PC-relate to identify related samples Hail's implementation of PC-relate using the `pc_relate` method.
+
+___Inputs___:
+* Filepath to hard-calls MatrixTable from step 1: `${MT_HARDCALLS}`
+* Filepath to the list of samples remaining after `03_2_initial_sample_filter.r`: `${SAMPLE_LIST_INITIAL_QC}`
+
+___Outputs___:
+* Filepath to output .tsv to contain PC-relate information for plotting: `${PC_RELATE_OUTPUT}`
+* Filepath to output .tsv file set of related samples using (almost) maximally independent set: `${SAMPLE_LIST_RELATED}`
+
 `07_0_pc_relate.py`
-
-print("Inputs:")
-* Filepath to hard-calls MatrixTable from step 1: `${MT_HARDCALLS}`
-* Filepath to the list of samples remaining after `03_2_initial_sample_filter.r`: `${SAMPLE_LIST_INITIAL_QC}`
-print('PRUNED_VARIANTS; set of LD-pruned high-quality variants in the autosomes: ', PRUNED_VARIANTS)
-
-print("Outputs:")
-print('PC_RELATE_OUTPUT; output .tsv file with pc-relate information for plotting: ', PC_RELATE_OUTPUT)
 
 I still have a few steps to include. 
 
-final_variant_qc
-final_sample_qc
-creation of a final set of PCs to include in association analyses
-create and check a finalised curated matrix table
-spit out a vcf, plink, or bgen file from the matrixtable for downstream analyses that have input format requirements
+* final_variant_qc
+* final_sample_qc
+* creation of a final set of PCs to include in association analyses
+* create and check a finalised curated matrix table
+* spit out a vcf, plink, or bgen file from the matrixtable for downstream analyses that have input format requirements

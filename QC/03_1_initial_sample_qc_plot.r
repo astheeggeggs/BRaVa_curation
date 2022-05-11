@@ -7,9 +7,23 @@ source('utils/pretty_plotting.r')
 # Please these numbers based on what the plotting below looks like!
 source("utils/r_options.r")
 
+suppressPackageStartupMessages(library("argparse"))
+
+parser <- ArgumentParser()
+parser$add_argument("--initial_sample_qc_file", required=TRUE, help="Path to INITIAL_SAMPLE_QC_FILE output from 03_0_initial_sample_qc.py")
+parser$add_argument("--sample_information", required=TRUE,
+    help=paste0("Path to sample information file (aka phenotype file) - this should contain two columns PCT_CHIMERAS and ",
+        "PCT_CONTAMINATION, the chimeric read % and freemix contamination %, taken from the GATK/picard metadata. Also include any ",
+        "factor you would like to split on and edit the commented code in this file to plot.")
+parser$add_argument("--sexcheck_list", required=TRUE, help="Path to output file containing sex swaps")
+args <- parser$parse_args()
+
+INITIAL_SAMPLE_QC_FILE <- args$impute_sex_table
+SAMPLE_INFORMATION <- args$sample_information
+
 # Inputs 
 # INITIAL_SAMPLE_QC_FILE (output from 03_0_initial_sample_qc.py)
-# SAMPLE_INFORMATION (input from the user - what sample information is available?)
+# SAMPLE_INFORMATION (aka the phenotype file - input from the user - what sample information is available?)
 # In particular, this file should include the FREEMIX contaminiation and PCT_CHIMERAS (Chimeric read percentaage) information (if available).
 # If the GATK pipeline was run, these metrics should be available in the GATK/Picard metadeta.
 

@@ -10,7 +10,7 @@ source('utils/pretty_plotting.r')
 # Thresholds and plotting file locations defined in r_options.r
 source("utils/r_options.r")
 
-# Function to sanity check the random matrix theory proejctions
+# Function to sanity check the random matrix theory projections
 project_onto_ref_PCs <- function(bed.ref, obj.bed, n_PCs = 20, n_PC_plot = 8,
   outdir = "/well/lindgren/dpalmer/ukb_get_EUR/", filename = "output", strand_flip=FALSE) {
 
@@ -136,7 +136,7 @@ check_thres <- function(row, threshold) {
   return(!any(row > threshold))
 }
 
-unsure <- apply(rf_probs, 1, check_thres, T_European_RF)
+unsure <- apply(rf_probs, 1, check_thres, T_RF)
 classification <- as.character(predict(rf, dt_predict %>% select(PCs_to_use)))
 dt_predict$classification_loose <- as.factor(classification)
 classification[unsure] <- 'unsure'

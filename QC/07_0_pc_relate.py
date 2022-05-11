@@ -9,7 +9,7 @@ INITIAL_SAMPLES = sys.argv[2]
 PRUNED_VARIANTS = sys.argv[3]
 PHENOTYPES_TABLE = sys.argv[4]
 REFERENCE = 'GRCh38'
-IBD_PI_HAT_THRESHOLD = 0.08838835
+PC_RELATE_KINSHIP_THRESHOLD = 0.08838835
 
 # Outputs
 PC_RELATE_OUTPUT = sys.argv[5]
@@ -21,7 +21,7 @@ print('INITIAL_SAMPLES; set of initial samples output from 03_01_initial_sample_
 print('PRUNED_VARIANTS; set of LD-pruned high-quality variants in the autosomes: ', PRUNED_VARIANTS)
 
 print("Outputs:")
-print('PC_RELATE_OUTPUT; output .tsv file with IBD information for plotting: ', IBD_OUTPUT)
+print('PC_RELATE_OUTPUT; output .tsv file with pc-relate information for plotting: ', PC_RELATE_OUTPUT)
 
 ht_initial_samples = hl.import_table(INITIAL_SAMPLES, no_header=True, key='f0')
 ht_pruned_variants = hl.import_table(PRUNED_VARIANTS, no_header=True)

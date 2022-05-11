@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 # UKB genotype calls
-GENO_BED=$1
-GENO_BIM=$2
-GENO_FAM=$3
+GENO_X_BED=$1
+GENO_X_BIM=$2
+GENO_X_FAM=$3
 PHENOFILE=$4
 PRUNED_X_PLINK=$5
 

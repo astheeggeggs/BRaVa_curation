@@ -3,7 +3,7 @@ import sys
 
 # Inputs
 MT_HARDCALLS = sys.argv[1]
-INITIAL_SAMPLES = sys.argv[2]
+SAMPLE_LIST_INITIAL_QC= sys.argv[2]
 PRUNED_CHRX_VARIANTS = sys.argv[3]
 PHENOTYPES_TABLE = sys.argv[4]
 REFERENCE = 'GRCh38'
@@ -15,7 +15,7 @@ Y_NCALLED = sys.argv[7]
 
 print("Inputs:")
 print('MT_HARDCALLS; input hard calls matrix table: ', MT_HARDCALLS)
-print('INITIAL_SAMPLES; set of initial samples output from 03_01_initial_sample_qc_filter.r: ', INITIAL_SAMPLES)
+print('SAMPLE_LIST_INITIAL_QC; set of initial samples output from 03_01_initial_sample_qc_filter.r: ', SAMPLE_LIST_INITIAL_QC)
 print('PRUNED_CHRX_VARIANTS; set of LD-pruned high-quality variants on the X: ', PRUNED_CHRX_VARIANTS)
 print('PHENOTYPES_TABLE; a collection of sample annotations, which includes self-assigned sex or gender: ', PHENOTYPES_TABLE)
 
@@ -26,7 +26,7 @@ print('Y_NCALLED; output .tsv file of calls on the Y: ', Y_NCALLED)
 
 hl.init(default_reference=REFERENCE)
 
-ht_initial_samples = hl.import_table(INITIAL_SAMPLES, no_header=True, key='f0')
+ht_initial_samples = hl.import_table(SAMPLE_LIST_INITIAL_QC, no_header=True, key='f0')
 ht_pruned_chrx_variants = hl.import_table(PRUNED_CHRX_VARIANTS, no_header=True)
 sample_annotations = hl.read_table(PHENOTYPES_TABLE)
 

@@ -18,7 +18,7 @@ parser$add_argument("--sample_information", required=TRUE,
 parser$add_argument("--sexcheck_list", required=TRUE, help="Path to output file containing sex swaps")
 args <- parser$parse_args()
 
-INITIAL_SAMPLE_QC_FILE <- args$impute_sex_table
+INITIAL_SAMPLE_QC_FILE <- args$initial_sample_qc_file
 SAMPLE_INFORMATION <- args$sample_information
 
 # Inputs 

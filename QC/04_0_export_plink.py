@@ -3,7 +3,7 @@ import sys
 
 # Inputs
 MT_HARDCALLS = sys.argv[1]
-INITIAL_SAMPLES = sys.argv[2]
+SAMPLE_LIST_INITIAL_QC = sys.argv[2]
 INITIAL_VARIANT_LIST = sys.argv[3]
 HIGH_LD_INTERVALS = sys.argv[4]
 REFERENCE = 'GRCh38'
@@ -13,9 +13,9 @@ PLINK_FILES = sys.argv[5]
 
 print("Inputs:")
 print('MT_HARDCALLS; input hard calls matrix table: ', MT_HARDCALLS)
-print('INITIAL_SAMPLES; target intervals file: ', TARGET_INTERVALS)
-print('INITIAL_VARIANT_LIST; padded target intervals file: ', PADDED_TARGET_INTERVALS)
-print('HIGH_LD_INTERVALS; set of high-LD regions for removal: ', LCRs)
+print('SAMPLE_LIST_INITIAL_QC; target intervals file: ', SAMPLE_LIST_INITIAL_QC)
+print('INITIAL_VARIANT_LIST; padded target intervals file: ', INITIAL_VARIANT_LIST)
+print('HIGH_LD_INTERVALS; set of high-LD regions for removal: ', HIGH_LD_INTERVALS)
 
 print("Outputs:")
 print('PLINK_FILES; prefix for high-quality common variant plink files: ', PLINK_FILES)

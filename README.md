@@ -92,12 +92,12 @@ ___Outputs___:
 
 `python 03_0_initial_sample_qc.py ${MT_HARDCALLS} ${INITIAL_VARIANT_LIST} ${INITIAL_SAMPLE_QC_FILE}`
 
-### Part 2: Plot sample QC metrics
+### Part 1: Plot sample QC metrics
 
 We then plot the sample metrics using `03_1_initial_sample_qc_plot.r`. 
 We then create a series of plots, and define an empirical hard cutoff for a series of the metrics. Edit the chosen thresholds in `utils/r_options.r` or redefine them at the start of the plotting script (`03_1_initial_sample_qc_plot.r`).
 
-### Part 3: Filter sample QC metrics based on emprical thresholds
+### Part 2: Filter sample QC metrics based on emprical thresholds
 
 When you are happy with the proposed cutoffs, run `03_2_initial_sample_filter.r`.
 

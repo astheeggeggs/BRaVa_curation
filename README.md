@@ -6,6 +6,14 @@ Throughout, we assume that the reference geneome is GRCh38. If this isn't the re
 
 These scripts assume that you have access to a large number of cores to run them on. If not, you will need to split (e.g. by chromosome) and run scripts in parallel. Examples of this procedure and intermediate plotting (as well as scripts for submitting jobs to a HPC) for very similar steps to these can be found in [this](https://github.com/astheeggeggs/SAIGE_gene_munging/tree/main/QC_scripts) repository.
 
+A set of useful file are in the [example inputs folder](https://github.com/astheeggeggs/BRaVa_curation/tree/main/example_inputs):
+
+* Low complexiy region file in the expected format: `LCR-hs38.bed.gz`
+* Regions of high-LD (in build 38) in the expected format: `b38_high_ld.bed`
+* Target intervals file in the expected format: `ice_coding_v1_targets.interval_list.gz`. 
+* Padded target intervals file in the expected format `ice_coding_v1_padded_targets.interval_list.gz`
+ * Note that the header lines of interval_list files are prepended with `@` - these lines are ignored by Hail.
+
 ## Step 0: Create an initial Hail MatrixTable
 Read in joint called VCF and write to Hail MatrixTable format
 
@@ -64,9 +72,9 @@ ___Outputs___:
 
 We have included an example target intervals file, target intervals file with 50bp padding and LCRs file to show the expected format.
 
-Target intervals file: `example_inputs/ice_coding_v1_targets.interval_list.gz`
-Padded target intervals file: `example_inputs/ice_coding_v1_padded_targets.interval_list.gz`
-LCRs file: `example_inputs/LCR-hs38.bed.gz`
+* Target intervals file: `example_inputs/ice_coding_v1_targets.interval_list.gz`
+* Padded target intervals file: `example_inputs/ice_coding_v1_padded_targets.interval_list.gz`
+* LCRs file: `example_inputs/LCR-hs38.bed.gz`
 
 ## Step 3: Initial Sample QC
 

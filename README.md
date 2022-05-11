@@ -12,7 +12,7 @@ A set of useful file are in the [example inputs folder](https://github.com/asthe
 * Regions of high-LD (in build 38) in the expected format: `b38_high_ld.bed`
 * Target intervals file in the expected format: `ice_coding_v1_targets.interval_list.gz`. 
 * Padded target intervals file in the expected format `ice_coding_v1_padded_targets.interval_list.gz`
- * Note that the header lines of interval_list files are prepended with `@` - these lines are ignored by Hail.
+  * Note that the header lines of interval_list files are prepended with `@` - these lines are ignored by Hail.
 
 ## Step 0: Create an initial Hail MatrixTable
 Read in joint called VCF and write to Hail MatrixTable format

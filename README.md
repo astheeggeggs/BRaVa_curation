@@ -78,6 +78,8 @@ We have included an example target intervals file, target intervals file with 50
 
 ## Step 3: Initial Sample QC
 
+### Part 0: Determine sample QC metrics
+
 In this step, we run the sample QC function in hail to determine sample qc metrics
 
 ___Inputs___:  
@@ -90,8 +92,12 @@ ___Outputs___:
 
 `python 03_0_initial_sample_qc.py ${MT_HARDCALLS} ${INITIAL_VARIANT_LIST} ${INITIAL_SAMPLE_QC_FILE}`
 
+### Part 2: Plot sample QC metrics
+
 We then plot the sample metrics using `03_1_initial_sample_qc_plot.r`. 
 We then create a series of plots, and define an empirical hard cutoff for a series of the metrics. Edit the chosen thresholds in `utils/r_options.r` or redefine them at the start of the plotting script (`03_1_initial_sample_qc_plot.r`).
+
+### Part 3: Filter sample QC metrics based on emprical thresholds
 
 When you are happy with the proposed cutoffs, run `03_2_initial_sample_filter.r`.
 
@@ -99,7 +105,7 @@ When you are happy with the proposed cutoffs, run `03_2_initial_sample_filter.r`
 
 There are a few options here
 
-### Genotype data is available
+### Part 0 when genotype data is available: LD-prune the X
 
 This first step takes the X chromosome, and LD prunes to define a collection of pseudo-independent SNPs for subsequent _F_-statistic evaluation. We filter to the collection of samples with exome sequence data available to speed things.
 
@@ -116,7 +122,7 @@ ___Outputs___:
 
 `bash 04_prune_genotyped_snps.sh ${GENO_X_BED} ${GENO_X_BIM} ${GENO_X_FAM} ${SAMPLE_INFORMATION} ${PRUNED_X_PLINK}`
 
-### Only WES data is available
+### Part 0 when only WES data is available: export high quality common variants as plink file
 
 If only WES data is available, you'll need to create a set of high quality SNPs, and then LD-prune them. The first step is to spit out a high quality set of variants to a set of plink files.
 
@@ -131,6 +137,8 @@ ___Outputs___:
 
 `python 04_0_export_plink.py ${MT_HARDCALLS} ${SAMPLE_LIST_INITIAL_QC} ${INITIAL_VARIANT_LIST} ${HIGH_LD_INTERVALS} ${PLINK_FILES}`
 
+### Part 1 when only WES data is available: LD-prune the plink files
+
 Next, take these plink files and LD-prune them. The following bash script is a simple wrapper to call plink a few times. Again, we're assuming that plink is installed and in your `$PATH`.
 
 ___Inputs___:
@@ -138,7 +146,7 @@ ___Inputs___:
 
 `bash 04_1_prune_sequencing_snps.sh ${PLINK_FILES}`
 
-The outputs of step 4 (if genotype data is available and if only WES data is available) feed into steps 5 and 6.
+The outputs of step 4 (both when genotype data is available and if only WES data is available) feed into steps 5 and 6.
 
 ## Step 5: Determine superpopulation ancestry labels
 
@@ -173,6 +181,8 @@ The code is the same, just applied to either LD-pruned genotyping (output of `04
 
 To do this we read in the pruned sex chromosome data, and determine the _F_-statistic for samples using the X chromosome, and check the number of non-missing allele counts on the Y.
 
+### Part 0: Compute _F_-statistics and Y calls
+
 ___Inputs___:
 * Filepath to hard-calls MatrixTable from step 1: `${MT_HARDCALLS}`
 * Filepath to the list of samples remaining after `03_2_initial_sample_filter.r`: `${SAMPLE_LIST_INITIAL_QC}`
@@ -185,6 +195,8 @@ ___Outputs___:
 * Filepath to output .tsv file of the number of calls on the Y: `${Y_NCALLED}`
 
 `python 06_0_impute_sex.py ${MT_HARDCALLS} ${SAMPLE_LIST_INITIAL_QC} ${PRUNED_CHRX_VARIANTS} ${SAMPLE_TABLE} ${IMPUTESEX_TABLE} ${IMPUTESEX_FILE} ${Y_NCALLED}`
+
+### Part 0: Plot the results
 
 Plot the output of `06_impute_sex.py`. We plot the distribution of the _F_-statistic on the X, and define a cutoff for sex labelling. We also plot the X _F_-statistic against the number of reads on the Y chromosome. After adding genetically defined sex, we compare to the self assigned sex in the phenotype file and remove mismatches.
 
@@ -199,6 +211,8 @@ ___Outputs___:
 
 ## Step 7: Determine related samples
 
+### Part 0 if homogeneous ancestry: estimate IBD
+
 If you have a single homogeneous population, you can use IBD estimation using Hail's `identity_by_descent` method. 
 
 ___Inputs___:
@@ -212,6 +226,8 @@ ___Outputs___:
 
 `python 07_0_ibd.py ${MT_HARDCALLS} ${SAMPLE_LIST_INITIAL_QC} ${PRUNED_VARIANTS} ${IBD_OUTPUT} ${SAMPLE_LIST_RELATED}`
 
+### Part 1 if homogeneous ancestry: plot the results
+
 Plot the resultant IBD estimates and colour code them:
 
 ___Inputs___:
@@ -219,6 +235,8 @@ ___Inputs___:
 * PI HAT threshold to use for 'related' (default: 0.2): `--ibd_threshold`
 
 `Rscript 06_1_impute_sex_plot.r --ibd_file ${IBD_OUTPUT} --ibd_threshold 0.2`
+
+### Part 0 if multi-ancestry: run PC-relate
 
 If you have multiple superpopulations, you should use PC-relate to identify related samples Hail's implementation of PC-relate using the `pc_relate` method.
 

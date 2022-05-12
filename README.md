@@ -191,7 +191,7 @@ ___Inputs___:
 
 ___Outputs___:
 * Filepath to output .tsv file used to plot imputed sex information in the next step: `${IMPUTESEX_TABLE}`
-* Filepath to output .tsv file used to count the mismatches as this step fro a summary table: `${IMPUTESEX_FILE}`
+* Filepath to output .tsv file used to count the mismatches at this step for a summary table: `${IMPUTESEX_FILE}`
 * Filepath to output .tsv file of the number of calls on the Y: `${Y_NCALLED}`
 
 `python 06_0_impute_sex.py ${MT_HARDCALLS} ${SAMPLE_LIST_INITIAL_QC} ${PRUNED_CHRX_VARIANTS} ${SAMPLE_TABLE} ${IMPUTESEX_TABLE} ${IMPUTESEX_FILE} ${Y_NCALLED}`

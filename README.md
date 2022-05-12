@@ -207,7 +207,7 @@ ___Inputs___:
 ___Outputs___:
 * Filepath to output .tsv file containing the samples to be removed due to sex swaps: `--sexcheck_list`
 
-`Rscript 06_1_impute_sex_plot.r ----impute_sex_table ${IMPUTESEX_TABLE} --y-ncalled ${Y_NCALLED}`
+`Rscript 06_1_impute_sex_plot.r --impute_sex_table ${IMPUTESEX_TABLE} --y-ncalled ${Y_NCALLED}`
 
 ## Step 7: Determine related samples
 

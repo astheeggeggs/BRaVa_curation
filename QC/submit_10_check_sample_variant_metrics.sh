@@ -26,9 +26,9 @@ export PYTHONPATH="${PYTHONPATH-}:/well/lindgren/dpalmer/ukb_utils/python:/well/
 chr=$(get_chr ${SGE_TASK_ID})
 
 TRANCHE='200k'
-CURATED_MT='/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc/data/final_mt/10_european.strict_filtered_chr${chr}.mt'
-SAMPLE_QC_FILE='/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/10_sample_metrics_for_plotting_chr${chr}.tsv.gz'
-VARIANT_QC_FILE='/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/10_variant_metrics_for_plotting_chr${chr}.tsv.gz'
+CURATED_MT="/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc/data/final_mt/10_european.strict_filtered_chr${chr}.mt"
+SAMPLE_QC_FILE="/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/10_sample_metrics_for_plotting_chr${chr}.tsv.gz"
+VARIANT_QC_FILE="/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/10_variant_metrics_for_plotting_chr${chr}.tsv.gz"
 
 python 10_check_sample_variant_metrics.py ${CURATED_MT} ${SAMPLE_QC_FILE} ${VARIANT_QC_FILE}
 print_update "Finished running Hail for chr${chr}" "${SECONDS}"

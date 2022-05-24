@@ -14,7 +14,7 @@ VARIANT_QC_FILE = sys.argv[2]
 SAMPLE_QC_FILE = sys.argv[3]
 
 print("Inputs:")
-print('MT; input matrix table: ', MT)
+print('CURATED_MT; input matrix table: ', CURATED_MT)
 
 print("Outputs:")
 print('VARIANT_QC_FILE; output .tsv file variant QC information: ', VARIANT_QC_FILE)

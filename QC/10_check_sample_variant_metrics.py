@@ -1,4 +1,6 @@
 import hail as hl
+import sys
+
 from ukb_utils import hail_init
 from ukb_utils import genotypes
 

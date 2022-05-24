@@ -22,7 +22,7 @@ print('PLINK_FILES; prefix for high-quality common variant plink files: ', PLINK
 
 hl.init(default_reference=REFERENCE)
 
-ht_initial_samples = hl.import_table(INITIAL_SAMPLES, no_header=True, key='f0')
+ht_initial_samples = hl.import_table(SAMPLE_LIST_INITIAL_QC, no_header=True, key='f0')
 ht_initial_variants = hl.import_table(INITIAL_VARIANT_LIST, types={'locus':hl.tlocus(reference_genome=REFERENCE), 'alleles':hl.tarray(hl.tstr)})
 ht_initial_variants = ht_initial_variants.key_by(ht_initial_variants.locus, ht_initial_variants.alleles)
 

@@ -139,7 +139,7 @@ dt_data <- extract_ID_and_ICD_UKB()
 dt_binary <- extract_case_status(dt_data, dt_query)
 setkey(dt_binary, "eid")
 
-# Merge with 1000G labels - this file is created using estimate_superpopulation.r
+# Merge with 1000G labels - this file is created using 05_estimate_superpopulation.r in the QC folder.
 dt_classify <- fread("/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/superpopulation_labels.tsv")
 dt_classify[, eid:=sample.ID]
 dt_classify[, sample.ID:=NULL]

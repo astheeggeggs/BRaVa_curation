@@ -37,5 +37,5 @@ INITIAL_VARIANT_LIST="/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc
 SAMPLE_LIST_INITIAL_QC="/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc/data/samples/03_initial_qc.keep.sample_list"
 VARIANT_QC_FILE="/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc/data/variants/08_final_qc.variants_chr${chr}_"
 
-python 08_final_variant_qc.py ${MT} ${IMPUTESEX_TABLE} ${SUPERPOPS} ${SEXCHECK_LIST} ${RELATED_SAMPLES} ${INITIAL_VARIANT_LIST} ${SAMPLE_LIST_INITIAL_QC}
+python 08_final_variant_qc.py ${MT} ${IMPUTESEX_TABLE} ${SUPERPOPS} ${SEXCHECK_LIST} ${RELATED_SAMPLES} ${INITIAL_VARIANT_LIST} ${SAMPLE_LIST_INITIAL_QC} ${VARIANT_QC_FILE}
 print_update "Finished running Hail for chr${chr}" "${SECONDS}"

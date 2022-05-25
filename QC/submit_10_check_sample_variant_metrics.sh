@@ -6,7 +6,7 @@
 #$ -P lindgren.prjc
 #$ -pe shmem 30
 #$ -q short.qf@@short.hgf
-#$ -t 1-23
+#$ -t 12-23
 
 set -o errexit
 set -o nounset
@@ -25,10 +25,12 @@ export PYTHONPATH="${PYTHONPATH-}:/well/lindgren/dpalmer/ukb_utils/python:/well/
 
 chr=$(get_chr ${SGE_TASK_ID})
 
+export HAIL_TMP_DIR="/well/lindgren/dpalmer"
+
 TRANCHE='200k'
 CURATED_MT="/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc/data/final_mt/10_european.strict_filtered_chr${chr}.mt"
 SAMPLE_QC_FILE="/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc/data/samples/10_sample_metrics_for_plotting_chr${chr}.tsv.gz"
-SAMPLE_QC_TARGET_FILE="/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc/data/10_sample_target_interval_metrics_for_plotting_chr${chr}.tsv.gz"
+SAMPLE_QC_TARGET_FILE="/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc/data/samples/10_sample_target_interval_metrics_for_plotting_chr${chr}.tsv.gz"
 VARIANT_QC_FILE="/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc/data/variants/10_variant_metrics_for_plotting_chr${chr}.tsv.gz"
 IMPUTESEX_TABLE="/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc/data/samples/04_imputesex.ht"
 

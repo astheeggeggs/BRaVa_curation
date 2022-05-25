@@ -171,7 +171,7 @@ create_pretty_boxplots <- function(df, aes, aes_col, threshold=NULL,
     return(p)
 }
 
-create_pretty_cumulative <- function(df, aes, x_label, threshold, threshold_max=NULL,
+create_pretty_cumulative <- function(df, aes, x_label, threshold=NULL, threshold_max=NULL,
     file='file_out', title='', width=160, height=90, scaling=1, save_figure=FALSE,
     xlim=c(0,1), key_label='', print_p=FALSE, title.hjust=0.5, ggplot_theme=theme_classic)
 {

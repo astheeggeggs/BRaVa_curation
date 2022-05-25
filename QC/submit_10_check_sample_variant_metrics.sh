@@ -28,8 +28,9 @@ chr=$(get_chr ${SGE_TASK_ID})
 TRANCHE='200k'
 CURATED_MT="/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc/data/final_mt/10_european.strict_filtered_chr${chr}.mt"
 SAMPLE_QC_FILE="/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc/data/samples/10_sample_metrics_for_plotting_chr${chr}.tsv.gz"
+SAMPLE_QC_TARGET_FILE="/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc/data/10_sample_target_interval_metrics_for_plotting_chr${chr}.tsv.gz"
 VARIANT_QC_FILE="/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc/data/variants/10_variant_metrics_for_plotting_chr${chr}.tsv.gz"
 IMPUTESEX_TABLE="/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc/data/samples/04_imputesex.ht"
 
-python 10_check_sample_variant_metrics.py ${CURATED_MT} ${VARIANT_QC_FILE} ${SAMPLE_QC_FILE} ${IMPUTESEX_TABLE}
+python 10_check_sample_variant_metrics.py ${CURATED_MT} ${VARIANT_QC_FILE} ${SAMPLE_QC_FILE} ${SAMPLE_QC_TARGET_FILE} ${IMPUTESEX_TABLE}
 print_update "Finished running Hail for chr${chr}" "${SECONDS}"

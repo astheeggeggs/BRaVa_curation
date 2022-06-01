@@ -1,7 +1,11 @@
 import hail as hl
 import sys
 
-hl.init()
+from ukb_utils import hail_init
+from ukb_utils import genotypes
+
+hail_init.hail_bmrc_init('logs/hail/hail_export.log', 'GRCh38')
+# hl.init()
 
 # Inputs
 MT = sys.argv[1]
@@ -23,7 +27,7 @@ VARIANT_QC_FILE = sys.argv[8]
 # IMPUTESEX_TABLE = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/samples/04_imputesex_'
 # SUPERPOPS = "/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/superpopulation_labels.tsv"
 # SEXCHECK_LIST = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/samples/04_sexcheck.remove.sample_list'
-# RELATED_SAMPLES = '/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/samples/06_king.related.sample_list'
+# RELATED_SAMPLES = '/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/samples/07_king.related.sample_list'
 # INITIAL_VARIANT_LIST = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/variants/02_prefilter_chr' + CHR + '.keep.variant.ht'
 # SAMPLE_LIST_INITIAL_QC = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/samples/03_initial_qc.keep.sample_list'
 
@@ -58,28 +62,26 @@ mt = mt.filter_cols(~hl.is_defined(ht_related_samples[mt.col_key]))
 
 for pop in ["AFR", "AMR", "EAS", "EUR", "SAS"]:
 	impute_sex_annotations = hl.read_table(IMPUTESEX_TABLE + pop + '.ht')
-	mt_pop = mt.filter_cols(mt.classification_strict == pop)
-	mt_pop = mt.annotate_cols(imputesex = impute_sex_annotations[mt.col_key])
+	mt = mt.annotate_cols(filter_pop = (mt.classification_strict == pop))
+	mt_pop = mt.filter_cols(mt.filter_pop == True)
+	print(mt_pop.count())
+	mt_pop = mt_pop.annotate_cols(imputesex = impute_sex_annotations[mt_pop.col_key])
 	mt_pop = hl.variant_qc(mt_pop, name='variant_qc')
-
 	mt_pop = mt_pop.annotate_rows(
 		variant_qc=mt_pop.variant_qc.annotate(AC=mt_pop.variant_qc.AC[1],
 		AF=mt_pop.variant_qc.AF[1],
 		homozygote_count=mt_pop.variant_qc.homozygote_count[1]))
-
 	mt_pop = mt_pop.annotate_rows(
 		variant_qc = mt_pop.variant_qc.annotate(p_value_hwe = hl.case()
 		.when(mt_pop.locus.in_autosome(), mt_pop.variant_qc.p_value_hwe)
 		.default(hl.agg.filter(mt_pop.imputesex.impute_sex.is_female,
 			hl.agg.hardy_weinberg_test(mt_pop.GT).p_value)))
 	)
-
 	mt_pop = mt_pop.annotate_rows(
 		variant_qc = mt_pop.variant_qc.annotate(het_freq_hwe = hl.case()
 		.when(mt_pop.locus.in_autosome(), mt_pop.variant_qc.het_freq_hwe)
 		.default(hl.agg.filter(mt_pop.imputesex.impute_sex.is_female,
 			hl.agg.hardy_weinberg_test(mt_pop.GT).het_freq_hwe)))
 	)
-
 	mt_pop.rows().select('variant_qc').flatten().export(f'{VARIANT_QC_FILE}{pop}.tsv.bgz')
 

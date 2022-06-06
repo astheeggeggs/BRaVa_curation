@@ -34,7 +34,6 @@ REFERENCE = 'GRCh38'
 SAMPLE_BEFORE_QC_FILE = sys.argv[8]
 SAMPLE_AFTER_QC_FILE = sys.argv[9]
 
-impute_sex_annotations = hl.read_table(IMPUTESEX_TABLE)
 ht_superpops = hl.import_table(SUPERPOPS, impute=True).key_by("sample.ID").select("classification_strict")
 ht_initial_variants = hl.read_table(INITIAL_VARIANT_LIST)
 ht_initial_samples = hl.import_table(SAMPLE_LIST_INITIAL_QC, no_header=True, key='f0')

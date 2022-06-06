@@ -5,7 +5,6 @@ from ukb_utils import hail_init
 from ukb_utils import genotypes
 
 hail_init.hail_bmrc_init('logs/hail/hail_export.log', 'GRCh38')
-# hl.init()
 
 # Inputs
 MT = sys.argv[1]

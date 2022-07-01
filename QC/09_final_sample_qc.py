@@ -4,8 +4,6 @@ import sys
 from ukb_utils import hail_init
 from ukb_utils import genotypes
 
-hail_init.hail_bmrc_init('logs/hail/hail_export.log', 'GRCh38')
-
 # # Inputs:
 # CHR = '20'
 # MT_HARDCALLS = '/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/filtered/ukb_wes_200k_filtered_hardcalls_chr' + CHR + '.mt'
@@ -34,6 +32,8 @@ REFERENCE = 'GRCh38'
 SAMPLE_BEFORE_QC_FILE = sys.argv[8]
 SAMPLE_AFTER_QC_FILE = sys.argv[9]
 
+hail_init.hail_bmrc_init('logs/hail/hail_export.log', 'GRCh38')
+
 ht_superpops = hl.import_table(SUPERPOPS, impute=True).key_by("sample.ID").select("classification_strict")
 ht_initial_variants = hl.read_table(INITIAL_VARIANT_LIST)
 ht_initial_samples = hl.import_table(SAMPLE_LIST_INITIAL_QC, no_header=True, key='f0')
@@ -52,7 +52,6 @@ for pop in ["AFR", "AMR", "EAS", "EUR", "SAS"]:
 	impute_sex_annotations = hl.read_table(IMPUTESEX_TABLE + pop + '.ht')
 	mt_before = mt_before.annotate_cols(filter_pop = (mt_before.classification_strict == pop))
 	mt_before_pop = mt_before.filter_cols(mt_before.filter_pop == True)
-	print(mt_before_pop.count())
 	mt_before_pop = mt_before_pop.filter_cols(hl.is_defined(ht_initial_samples[mt_before_pop.col_key]))
 	mt_before_pop = mt_before_pop.filter_cols(~hl.is_defined(ht_sexcheck_samples[mt_before_pop.col_key]))
 	mt_before_pop = hl.variant_qc(mt_before_pop, name = 'variant_qc')

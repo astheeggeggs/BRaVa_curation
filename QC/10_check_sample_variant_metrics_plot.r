@@ -181,5 +181,6 @@ create_pretty_hist(dt, aes(x=sample_qc.dp_stats.mean), x_label='Mean DP', save_f
 create_pretty_hist(dt, aes(x=sample_qc.gq_stats.mean), x_label='Mean GQ', save_figure=save_figures,
     file=paste0(PLOTS, TRANCHE, '_10_sample_mean_GQ_hist'))
 
-# Want to store super straightforward metrics for the samples too.
+# Plot the distribution of these too.
+# Compare to the ExAC plots
 

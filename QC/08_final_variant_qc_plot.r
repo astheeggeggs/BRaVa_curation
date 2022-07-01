@@ -47,11 +47,11 @@ dt_list <- list()
 for (pop in c("AFR", "AMR", "EAS", "EUR", "SAS")) {
     COMBINED_VARIANT_QC_FILE <- paste0(VARIANT_QC_FILE, "_", pop, ".tsv")
     dt_list[[pop]] <- fread(COMBINED_VARIANT_QC_FILE)
-    print(nrow(dt_list[[pop]])
+    print(nrow(dt_list[[pop]]))
     dt_list[[pop]]$pop <- pop
 }
 dt <- rbindlist(dt_list)
-fwrite(dt, file=paste0(VARIANT_QC_FILE, "_combined.tsv"), sep='\t', quote=FALSE))
+fwrite(dt, file=paste0(VARIANT_QC_FILE, "_combined.tsv"), sep='\t', quote=FALSE)
     
 dt <- fread(paste0(VARIANT_QC_FILE, "_combined.tsv"))
 p <- create_pretty_cumulative(dt, aes(x=variant_qc.call_rate, col=pop), x_label="Call Rate", threshold=NULL,

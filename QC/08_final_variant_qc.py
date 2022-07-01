@@ -4,8 +4,6 @@ import sys
 from ukb_utils import hail_init
 from ukb_utils import genotypes
 
-hail_init.hail_bmrc_init('logs/hail/hail_export.log', 'GRCh38')
-
 # Inputs
 MT = sys.argv[1]
 IMPUTESEX_TABLE = sys.argv[2]
@@ -18,6 +16,8 @@ REFERENCE = 'GRCh38'
 
 # Outputs
 VARIANT_QC_FILE = sys.argv[8]
+
+hail_init.hail_bmrc_init('logs/hail/hail_export.log', REFERENCE)
 
 # # Inputs:
 # TRANCHE = '200k'

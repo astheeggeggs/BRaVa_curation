@@ -30,13 +30,13 @@ export HAIL_TMP_DIR="/well/lindgren/UKBIOBANK/dpalmer"
 TRANCHE="200k"
 
 # Inputs:
-MT="/well/lindgren/UKBIOBANK/nbaya/wes_${TRANCHE}/ukb_wes_qc/data/filtered/ukb_wes_${TRANCHE}_filtered_chr${CHR}.mt"
+MT="/well/lindgren/UKBIOBANK/nbaya/wes_${TRANCHE}/ukb_wes_qc/data/filtered/ukb_wes_${TRANCHE}_filtered_chr${chr}.mt"
 FINAL_SAMPLE_LIST="/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc/data/samples/09_final_qc.keep.BRaVa.sample_list"
 FINAL_VARIANT_LIST="/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc/data/variants/08_final_qc.pop.keep.variant_list"
 
 # Outputs
 QC_MT_PREFIX="/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc/data/final_mt/10_strict_filtered_chr"
 
-python 10_create_qc_mt.py ${MT} ${FINALS_SAMPLE_LIST} ${FINAL_VARIANT_LIST}
+python 10_create_qc_mt.py ${MT} ${FINAL_SAMPLE_LIST} ${FINAL_VARIANT_LIST} ${QC_MT_PREFIX}
 print_update "Finished running Hail for chr${chr}" "${SECONDS}"
 

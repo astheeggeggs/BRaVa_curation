@@ -13,7 +13,7 @@ FINAL_VARIANT_LIST  = sys.argv[3]
 QC_MT_PREFIX = sys.argv[4]
 REFERENCE = 'GRCh38'
 
-hail_init.hail_bmrc_init_local('logs/hail/hail_export.log', 'GRCh38')
+hail_init.hail_bmrc_init('logs/hail/hail_export.log', 'GRCh38')
 
 # # Inputs:
 # MT  = '/well/lindgren/UKBIOBANK/nbaya/wes_' + TRANCHE + '/ukb_wes_qc/data/filtered/ukb_wes_' + TRANCHE + '_filtered_chr' + CHR + '.mt'

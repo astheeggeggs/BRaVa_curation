@@ -11,13 +11,13 @@ QC_MT_PREFIX = sys.argv[1]
 QC_VCF_PREFIX = sys.argv[2]
 REFERENCE = 'GRCh38'
 
-hail_init.hail_bmrc_init_local('logs/hail/hail_export.log', REFERENCE)
+hail_init.hail_bmrc_init('logs/hail/hail_export.log', REFERENCE)
 
-# Inputs:
-QC_MT_PREFIX = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/final_mt/10_strict_filtered_chr'
+# # Inputs:
+# QC_MT_PREFIX = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/final_mt/10_strict_filtered_chr'
 
-# Outputs:
-QC_VCF_PREFIX = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/final_mt/10_strict_filtered_chr'
+# # Outputs:
+# QC_VCF_PREFIX = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/final_mt/10_strict_filtered_chr'
 
 for pop in ["AFR", "AMR", "EAS", "EUR", "SAS"]:
 

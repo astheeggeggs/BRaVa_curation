@@ -8,9 +8,10 @@ from ukb_utils import genotypes
 MT = sys.argv[1]
 FINAL_SAMPLE_LIST  = sys.argv[2]
 FINAL_VARIANT_LIST  = sys.argv[3]
+SUPERPOPS = sys.argv[4]
 
 # Outputs:
-QC_MT_PREFIX = sys.argv[4]
+QC_MT_PREFIX = sys.argv[5]
 REFERENCE = 'GRCh38'
 
 hail_init.hail_bmrc_init('logs/hail/hail_export.log', REFERENCE)

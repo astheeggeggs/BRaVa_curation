@@ -35,7 +35,7 @@ FINAL_SAMPLE_LIST="/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc/da
 FINAL_VARIANT_LIST="/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc/data/variants/08_final_qc.pop.keep.variant_list"
 
 # Outputs
-QC_MT_PREFIX="/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc/data/final_mt/10_strict_filtered_chr"
+QC_MT_PREFIX="/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc/data/final_mt/10_strict_filtered_chr${chr}"
 
 python 10_create_qc_mt.py ${MT} ${FINAL_SAMPLE_LIST} ${FINAL_VARIANT_LIST} ${QC_MT_PREFIX}
 print_update "Finished running Hail for chr${chr}" "${SECONDS}"

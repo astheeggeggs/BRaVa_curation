@@ -16,15 +16,14 @@ REFERENCE = 'GRCh38'
 
 hail_init.hail_bmrc_init('logs/hail/hail_export.log', REFERENCE)
 
-# Inputs:
-MT  = '/well/lindgren/UKBIOBANK/nbaya/wes_200k/ukb_wes_qc/data/filtered/ukb_wes_200k_filtered_chr' + str(CHR) + '.mt'
+# # Inputs:
+# MT  = '/well/lindgren/UKBIOBANK/nbaya/wes_200k/ukb_wes_qc/data/filtered/ukb_wes_200k_filtered_chr' + str(CHR) + '.mt'
+# FINAL_SAMPLE_LIST = '/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/samples/09_final_qc.keep.BRaVa.sample_list'
+# FINAL_VARIANT_LIST = '/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/variants/08_final_qc.pop.keep.variant_list'
+# SUPERPOPS = '/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/superpopulation_labels.tsv'
 
-FINAL_SAMPLE_LIST = '/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/samples/09_final_qc.keep.BRaVa.sample_list'
-FINAL_VARIANT_LIST = '/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/variants/08_final_qc.pop.keep.variant_list'
-SUPERPOPS = '/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/superpopulation_labels.tsv'
-
-# Outputs
-QC_MT_PREFIX = '/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/final_mt/10_strict_filtered_chr' + str(CHR)
+# # Outputs
+# QC_MT_PREFIX = '/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/final_mt/10_strict_filtered_chr' + str(CHR)
 
 ht_final_samples = hl.import_table(FINAL_SAMPLE_LIST, no_header=True, key='f0', delimiter=',', types={'f0': hl.tstr})
 ht_final_variants = hl.import_table(FINAL_VARIANT_LIST, types={'locus':hl.tlocus(reference_genome='GRCh38'), 'alleles':hl.tarray(hl.tstr)})

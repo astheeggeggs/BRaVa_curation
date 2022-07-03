@@ -21,7 +21,7 @@ hail_init.hail_bmrc_init('logs/hail/hail_export.log', REFERENCE)
 
 for pop in ["AFR", "AMR", "EAS", "EUR", "SAS"]:
 
-	QC_MT = QC_MT_PREFIX + CHR + '.' + pop + '.mt'
+	QC_MT = QC_MT_PREFIX + '.' + pop + '.mt'
 	mt = hl.read_matrix_table(QC_MT)
-	QC_VCF = QC_VCF_PREFIX + CHR + '.' + pop + '.vcf.bgz'
+	QC_VCF = QC_VCF_PREFIX + '.' + pop + '.vcf.bgz'
 	hl.export_vcf(mt, output=QC_VCF)

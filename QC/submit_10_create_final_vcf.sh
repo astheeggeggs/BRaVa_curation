@@ -30,10 +30,10 @@ export HAIL_TMP_DIR="/well/lindgren/UKBIOBANK/dpalmer"
 TRANCHE="200k"
 
 # Inputs:
-QC_MT_PREFIX="/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc/data/final_mt/10_strict_filtered_chr"
+QC_MT_PREFIX="/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc/data/final_mt/10_strict_filtered_chr${chr}"
 
 # Outputs
-QC_VCF_PREFIX="/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc/data/final_mt/10_strict_filtered_chr"
+QC_VCF_PREFIX="/well/lindgren/UKBIOBANK/dpalmer/wes_${TRANCHE}/ukb_wes_qc/data/final_mt/10_strict_filtered_chr${chr}"
 
 python 10_create_qc_mt.py ${QC_MT_PREFIX} ${QC_VCF_PREFIX}
 print_update "Finished running Hail for chr${chr}" "${SECONDS}"

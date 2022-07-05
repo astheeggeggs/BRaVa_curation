@@ -16,5 +16,5 @@ print('RAW_MT; output matrix table: ', RAW_MT)
 
 hl.init(default_reference=REFERENCE)
 
-mt = hl.import_vcf(OUTPUT_FILE, reference_genome=REFERENCE, force_bgz=True, find_replace=('nul', '.'))
+mt = hl.import_vcf(INPUT_VCF, reference_genome=REFERENCE, force_bgz=True, find_replace=('nul', '.'))
 mt.write(output=RAW_MT, overwrite=True)

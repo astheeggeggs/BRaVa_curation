@@ -1,9 +1,24 @@
 import hail as hl
-import sys
+import argparse
+
+from ukb_utils import hail_init
+from ukb_utils import genotypes
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--chr", type=str, default='20')
+parser.add_argument("--tranche", type=str, default='200k')
+args = parser.parse_args()
+
+TRANCHE = args.tranche
+CHR = str(args.chr)
 
 # Inputs
-INITIAL_SAMPLES = sys.argv[1]
-KING_RELATEDS_FILE = sys.argv[2]
+INITIAL_SAMPLES='/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/samples/03_initial_qc.keep.sample_list'
+KING_RELATEDS_FILE="/well/lindgren-ukbb/projects/ukbb-11867/DATA/QC/ukb1186_rel_s488366.dat"
+SAMPLE_LIST_RELATED = '/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/samples/07_king.related.sample_list'
+
+hail_init.hail_bmrc_init('logs/hail/hail_export.log', 'GRCh38')
+
 KING_KINSHIP_THRESHOLD = 0.08838835
 
 # Outputs
@@ -15,8 +30,6 @@ print('KING_RELATEDS_FILE; UK Biobank provided file of up to 3rd degree relateds
 
 print("Outputs:")
 print('SAMPLE_LIST_RELATED; output file of related samples for exclusion: ', SAMPLE_LIST_RELATED)
-
-hl.init(default_reference=REFERENCE)
 
 ht_initial_samples = hl.import_table(INITIAL_SAMPLES, no_header=True, key='f0')
 

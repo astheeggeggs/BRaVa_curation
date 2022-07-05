@@ -4,9 +4,6 @@ library(dplyr)
 library(latex2exp)
 library(data.table)
 
-# File locations and thresholds defined in r_options_BipEx.r
-source("r_functions_and_parameters/r_options.r")
-
 suppressPackageStartupMessages(library("argparse"))
 
 parser <- ArgumentParser()

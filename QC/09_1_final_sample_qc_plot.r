@@ -29,6 +29,7 @@ CHR <- 1
 # Input files
 SAMPLE_BEFORE_QC_FILE <-  '/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/samples/09_final_qc_chr@.before.'
 SAMPLE_AFTER_QC_FILE <-  '/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/samples/09_final_qc_chr@.after.'
+
 # Output files
 SAMPLE_BEFORE_AFTER_COMBINED_QC_FILE <- '/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/samples/09_final_qc.before.after.combined.samples.tsv'
 
@@ -79,30 +80,13 @@ add_ratios <- function(dt) {
 dt_list <- list()
 for (pop in c("AFR", "AMR", "EAS", "EUR", "SAS"))
 {
-    CHR <- 1
     cat(paste0(pop, "...\n"))
-    cat("chromosome 1\n")
-    dt_before <- read_and_key(paste0(gsub("@", CHR, SAMPLE_BEFORE_QC_FILE), pop, ".samples.tsv.bgz"))
-    dt_after <- read_and_key(paste0(gsub("@", CHR, SAMPLE_BEFORE_QC_FILE), pop, ".samples.tsv.bgz"))
+    dt_before <- read_and_key(paste0(SAMPLE_BEFORE_QC_FILE , ".", pop, ".samples.tsv.bgz"))
+    dt_after <- read_and_key(paste0(SAMPLE_AFTER_QC_FILE), ".", pop, ".samples.tsv.bgz"))
 
-    for (CHR in c(seq(2,22), "X")) {
-        # Input files
-        cat(paste0("chromosome ", CHR, "\n"))
-        SAMPLE_BEFORE_QC_FILE_TMP <-  paste0(gsub("@", CHR, SAMPLE_BEFORE_QC_FILE), pop, ".samples.tsv.bgz")
-        SAMPLE_AFTER_QC_FILE_TMP <-  paste0(gsub("@", CHR, SAMPLE_AFTER_QC_FILE), pop, ".samples.tsv.bgz")
+    dt_before <- dt_before %>% mutate(phase = 'Before Variant QC')
+    dt_after <- dt_after %>% mutate(phase = 'After Variant QC')
 
-        dt_before_tmp <- read_and_key(SAMPLE_BEFORE_QC_FILE_TMP, tmp=TRUE)
-        dt_after_tmp <- read_and_key(SAMPLE_AFTER_QC_FILE_TMP, tmp=TRUE)
-
-        dt_before  <- merge(dt_before, dt_before_tmp)
-        dt_after <- merge(dt_after, dt_after_tmp)
-
-        dt_before <- update_entries(dt_before)
-        dt_after <- update_entries(dt_after)
-    }
-
-    dt_before <- add_ratios(dt_before) %>% mutate(phase = 'Before Variant QC')
-    dt_after <- add_ratios(dt_after) %>% mutate(phase = 'After Variant QC')
     dt <- bind_rows(dt_before, dt_after) %>%
         mutate(
             phase=factor(phase, levels=c('Before Variant QC', 'After Variant QC')),
@@ -126,7 +110,6 @@ if (save_figures)
         aes(color=factor(population)), facet=TRUE, facet_grid=facet_grid(phase~.), x_label='Number of Singletons',
         save_figure=save_figures, file=paste0(PLOTS, '09_nSingletons'), y_label=y_labels,
         alpha=alpha, height=140)
-    # lines <- data.table(x=unique(dt$phase), mad_threshold=c(0.2,, )
 
     # rHetHomVar
     create_pretty_boxplots(dt, aes(y=sample_qc.r_het_hom_var, x=factor(population)),

@@ -13,28 +13,27 @@ suppressPackageStartupMessages(library("argparse"))
 
 parser <- ArgumentParser()
 parser$add_argument("--sample_before_after", help = "File exported by 09_final_sample_qc_plot.r")
+parser$add_argument("--n_mads", default=(4*1.4826), help = "Number of median absolute deviations acceptable to retain for Ti/Tv, Ins/Del, Het/HomVar. Default is the equivalent to 4sds if the distribution were normal.")
+parser$add_argument("--n_mads_singleton", default=20, help = "Upper bound of MADs to tolerate for number of singletons")
 parser$add_argument("--final_sample_summary", help = "Summary of filters resulting in the final list of samples to keep")
 parser$add_argument("--final_sample_list", help = "Final list of samples to keep")
+
 args <- parser$parse_args()
 
-SAMPLE_BEFORE_AFTER_COMBINED_QC_FILE <- args$sample_before_after
-FINAL_SAMPLE_SUMMARY  <- args$final_sample_summary
-FINAL_SAMPLE_LIST <- args$final_sample_list
-
 # Inputs
-SAMPLE_BEFORE_AFTER_COMBINED_QC_FILE <- '/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/samples/09_final_qc.before.after.combined.samples.tsv'
+SAMPLE_BEFORE_AFTER_COMBINED_QC_FILE <- args$sample_before_after
+n_mads <- args$n_mads
+n_mads_singleton <- args$n_mads_singleton
 
 # Outputs
-FINAL_SAMPLE_SUMMARY <- '/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/samples/09_final_sample.summary.tsv'
-FINAL_SAMPLE_LIST <- '/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/samples/09_final_qc.keep.BRaVa.sample_list'
+FINAL_SAMPLE_SUMMARY  <- args$final_sample_summary
+FINAL_SAMPLE_LIST <- args$final_sample_list
 
 dt_after <- fread(SAMPLE_BEFORE_AFTER_COMBINED_QC_FILE, sep='\t', stringsAsFactors=FALSE, header=TRUE) %>%
   filter(phase=='After Variant QC')
 
 dt_keep <- dt_after[, 's']
 print(paste0("Started with: ", nrow(dt_keep), " samples"))
-
-n_mads <- 4*1.4826 # Approx 4 sds if the dist were normal
 
 # r_ti_tv
 dt_keep_ti_tv <- group_by(dt_after, population) %>%
@@ -133,7 +132,7 @@ dt_keep_insertion_deletion <- dt_keep_insertion_deletion %>% inner_join(dt_after
 
 # n_singletons
 dt_keep_n_singletons <- dt_keep_n_singletons %>% inner_join(dt_after, by='population') %>% 
-  filter((sample_qc.n_singleton <= (median + 20*mad)) | is.na(mad))
+  filter((sample_qc.n_singleton <= (median + n_mads_singleton*mad)) | is.na(mad))
 
 dt_keep <- dt_keep_ti_tv %>% inner_join(dt_after, by='s') %>% select(s)
 print(paste0("Remove Ti/Tv outliers: ", nrow(dt_keep), " samples remain"))
@@ -168,10 +167,10 @@ dt_final_sample_summary <- cbind(
   data.table(
     Filter = c(
       "Samples after population filters",
-      paste0("Within batch Ti/Tv ratio outside ", n_mads, " standard deviations"),
-      paste0("Within batch Het/HomVar ratio outside ", n_mads, " standard deviations"),
-      paste0("Within batch Insertion/Deletion ratio outside ", n_mads, " standard deviations"),
-      paste0("n singletons > 10 median absolute deviations"),
+      paste0("Within batch Ti/Tv ratio outside ", n_mads, " median absolute deviations"),
+      paste0("Within batch Het/HomVar ratio outside ", n_mads, " median absolute deviations"),
+      paste0("Within batch Insertion/Deletion ratio outside ", n_mads, " median absolute deviations"),
+      paste0("n singletons > ", n_mads_singleton, " median absolute deviations"),
       "Samples after final sample filters"
       )
     ),
@@ -179,8 +178,7 @@ dt_final_sample_summary <- cbind(
 
 names(dt_final_sample_summary) <- c("Filter", summary_fun(dt_after)$population)
 
-fwrite(dt_final_sample_summary, file=FINAL_SAMPLE_SUMMARY, quote=FALSE, row.names=FALSE, col.names=TRUE, sep='\t')
-
 # write out
+fwrite(dt_final_sample_summary, file=FINAL_SAMPLE_SUMMARY, quote=FALSE, row.names=FALSE, col.names=TRUE, sep='\t')
 fwrite(dt_keep, file=FINAL_SAMPLE_LIST, quote=FALSE, row.names=FALSE, col.names=FALSE)
 

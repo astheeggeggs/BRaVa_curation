@@ -2,23 +2,18 @@ library(dplyr)
 library(data.table)
 source("utils/r_options.r")
 
-suppressPackageStartupMessages(library("argparse"))
-
 parser <- ArgumentParser()
-parser$add_argument("--initial_sample_qc_file", required=TRUE, help="Path to INITIAL_SAMPLE_QC_FILE output from 03_0_initial_sample_qc.py")
-parser$add_argument("--sample_information", required=TRUE,
-    help=paste0("Path to sample information file (aka phenotype file) - this should contain two columns PCT_CHIMERAS and ",
-        "PCT_CONTAMINATION, the chimeric read % and freemix contamination %, taken from the GATK/picard metadata. Also include any ",
-        "factor you would like to split on and edit the commented code in this file to plot.")
-parser$add_argument("--sample_list_initial_qc", required=TRUE, help="Path to initial sample list output .tsv file")
-parser$add_argument("--sample_summary_count", required=TRUE, help="Path to initial sample filter summary counts .tsv file")
+parser$add_argument("--tranche", default='200k', help = "Which exome sequencing tranche?")
 args <- parser$parse_args()
 
-# Run the plotting again to ensure that the thresholds are as in the plots.
-source("03_initial_1_sample_qc_plot.r")
+TRANCHE <- args$tranche
 
-SAMPLE_LIST_INITIAL_QC <- args$sample_list_initial_qc
-SAMPLE_SUMMARY_COUNT <- args$sample_summary_count
+# Output
+SAMPLE_LIST_INITIAL_QC = paste0('/well/lindgren/UKBIOBANK/dpalmer/wes_', TRANCHE, '/ukb_wes_qc/data/samples/03_initial_qc.keep.sample_list')
+SAMPLE_LIST_INITIAL_SAMPLE_COUNT = paste0('/well/lindgren/UKBIOBANK/dpalmer/wes_', TRANCHE, '/ukb_wes_qc/data/samples/03_sample_count.tsv')
+
+# Run the plotting again to ensure that the thresholds are as in the plots.
+source("03_1_initial_sample_qc_plot.r")
 
 df_out <- filter(df, call_rate > T_sample_callRate) %>%
 	filter(PCT_CONTAMINATION < T_pct_contamination) %>%

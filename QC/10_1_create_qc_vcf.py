@@ -6,21 +6,20 @@ from ukb_utils import genotypes
 
 # Inputs
 QC_MT_PREFIX = sys.argv[1]
+REFERENCE = 'GRCh38'
 
 # Outputs:
 QC_VCF_PREFIX = sys.argv[2]
-REFERENCE = 'GRCh38'
 
-hail_init.hail_bmrc_init('logs/hail/hail_export.log', REFERENCE)
+hl.init(default_reference=REFERENCE)
 
-# # Inputs:
-# QC_MT_PREFIX = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/final_mt/10_strict_filtered_chr'
+print("Inputs:")
+print('QC_MT_PREFIX : prefix for 1000 genomes label specific matrix tables', QC_MT_PREFIX)
 
-# # Outputs:
-# QC_VCF_PREFIX = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/final_mt/10_strict_filtered_chr'
+print("Outputs:")
+print('QC_VCF_PREFIX : prefix for 1000 genomes label specific vcf.bgz files', QC_VCF_PREFIX)
 
 for pop in ["AFR", "AMR", "EAS", "EUR", "SAS"]:
-
 	QC_MT = QC_MT_PREFIX + '.' + pop + '.mt'
 	mt = hl.read_matrix_table(QC_MT)
 	QC_VCF = QC_VCF_PREFIX + '.' + pop + '.vcf.bgz'

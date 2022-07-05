@@ -1,21 +1,25 @@
 import hail as hl
-import sys
+import argparse
 
 from ukb_utils import hail_init
 from ukb_utils import genotypes
 
-# Inputs
-QC_MT_PREFIX = sys.argv[1]
-REFERENCE = 'GRCh38'
+parser = argparse.ArgumentParser()
+parser.add_argument("--chr", type=str, default='20')
+parser.add_argument("--tranche", type=str, default='200k')
+args = parser.parse_args()
 
-# Outputs
-VARIANT_QC_FILE = sys.argv[2]
-SAMPLE_QC_FILE = sys.argv[3]
-SAMPLE_QC_TARGET_FILE = sys.argv[4]
-IMPUTESEX_TABLE = sys.argv[5]
+TRANCHE = args.tranche
+CHR = str(args.chr)
+
+QC_MT_PREFIX= "/well/lindgren/UKBIOBANK/dpalmer/wes_" + TRANCHE + "/ukb_wes_qc/data/final_mt/10_strict_filtered_chr" + str(CHR)
+VARIANT_QC_FILE="/well/lindgren/UKBIOBANK/dpalmer/wes_" + TRANCHE + "/ukb_wes_qc/data/10_variant_metrics_for_plotting_chr" + str(CHR)
+SAMPLE_QC_FILE="/well/lindgren/UKBIOBANK/dpalmer/wes_" + TRANCHE + "/ukb_wes_qc/data/10_sample_metrics_for_plotting_chr" + str(CHR)
+SAMPLE_QC_TARGET_FILE="/well/lindgren/UKBIOBANK/dpalmer/wes_" + TRANCHE + "/ukb_wes_qc/data/10_sample_target_interval_metrics_for_plotting_chr" + str(CHR)
+IMPUTESEX_TABLE="/well/lindgren/UKBIOBANK/dpalmer/wes_" + TRANCHE + "/ukb_wes_qc/data/samples/04_imputesex_"
 
 print("Inputs:")
-print('QC_MT_PREFIX : prefix for 1000 genomes label specific matrix tables', QC_MT_PREFIX)
+print('QC_MT_PREFIX; input matrix table: ', QC_MT_PREFIX)
 
 print("Outputs:")
 print('VARIANT_QC_FILE; output .tsv file variant QC information: ', VARIANT_QC_FILE)
@@ -23,14 +27,14 @@ print('SAMPLE_QC_FILE; output .tsv file variant QC information: ', SAMPLE_QC_FIL
 print('SAMPLE_QC_TARGET_FILE; output .tsv file variant QC information: ', SAMPLE_QC_TARGET_FILE)
 print('IMPUTESEX_TABLE; output hail table with imputed sex: ', IMPUTESEX_TABLE)
 
-hl.init(default_reference=REFERENCE)
+hail_init.hail_bmrc_init('logs/hail/hail_export.log', 'GRCh38')
 
 # Grab target intervals
 target_path = '/well/lindgren-ukbb/projects/ukbb-11867/nbaya/resources/ref/xgen_plus_spikein.b38.chr_prefix.bed'
 target = hl.import_bed(target_path, reference_genome='GRCh38')
 
 # Loop over the 1000 genomes labels
-for pop in ["AFR", "AMR", "EAS", "EUR", "SAS"]:
+for pop in ["AFR", "AMR", "EAS", "SAS"]:#"EUR", "SAS"]:
 	# Read in and annotate
 	QC_MT = QC_MT_PREFIX + '.' + pop + '.mt'
 	mt = hl.read_matrix_table(QC_MT)

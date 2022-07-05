@@ -7,17 +7,16 @@ source("utils/pretty_plotting.r")
 suppressPackageStartupMessages(library("argparse"))
 
 parser <- ArgumentParser()
-parser$add_argument("--combined_variant_qc_file", required=TRUE, help="Path to COMBINED_VARIANT_QC_FILE")
-parser$add_argument("--variant_qc_list", required=TRUE, help="Path to VARIANT_LIST prefix to output for final variant filtering")
+parser$add_argument("--tranche", default='200k', help = "Which exome sequencing tranche?")
 args <- parser$parse_args()
 
-COMBINED_VARIANT_QC_FILE <- args$combined_variant_qc_file
-VARIANT_QC_LIST <- args$variant_qc_list
-VARIANT_SUMMARY <- args$variant_summary 
+TRANCHE <- args$tranche
 
-# COMBINED_VARIANT_QC_FILE <- "/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/variants/08_final_qc.variants_combined.tsv"
-# VARIANT_QC_LIST <- "/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/variants/08_final_qc.pop.keep.variant_list"
-# VARIANT_SUMMARY <- "/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/variants/08_variant_count.pop.tsv"
+# Inputs
+COMBINED_VARIANT_QC_FILE <- "/well/lindgren/UKBIOBANK/dpalmer/wes_" + TRANCHE + "/ukb_wes_qc/data/variants/08_final_qc.variants_combined.tsv"
+# Outputs
+VARIANT_QC_LIST <- "/well/lindgren/UKBIOBANK/dpalmer/wes_" + TRANCHE + "/ukb_wes_qc/data/variants/08_final_qc.pop.keep.variant_list"
+VARIANT_SUMMARY <- "/well/lindgren/UKBIOBANK/dpalmer/wes_" TRANCHE + "/ukb_wes_qc/data/variants/08_variant_count.pop.tsv"
 
 dt <- fread(COMBINED_VARIANT_QC_FILE, header=TRUE, sep='\t')
 print("Initial number of variants:")

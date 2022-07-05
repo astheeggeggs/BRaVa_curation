@@ -1,10 +1,14 @@
-rm(list=ls())
 library(bigsnpr)
 library(data.table)
 library(dplyr)
 library(ggplot2)
 library(randomForest)
 library(ggrastr)
+
+# Note, there is no step 4 in our WES 200k pipeline because we do not need to create a high quality plink file
+# of variants - we already have the genotype data! These will allow us to perform PCA more accurately than 
+# with the exome data alone. We also have the KING relatedness coefficients from UK Biobank, so don't need 
+# thinned autosomal variants for IBD estimation either.
 
 # Plotting functions:
 source('utils/pretty_plotting.r')

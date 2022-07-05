@@ -1,43 +1,49 @@
 import hail as hl
-import argparse
-
-from ukb_utils import hail_init
-from ukb_utils import genotypes
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--tranche", type=str, default='200k')
-args = parser.parse_args()
-
-TRANCHE = args.tranche
-
-hail_init.hail_bmrc_init_local('logs/hail/hail_export.log', 'GRCh38')
-
-# Genotypes
+import sys
 
 # Inputs
-# UKB genotype calls
-ukb_bed_X="/well/lindgren/UKBIOBANK/DATA/CALLS/ukb_cal_chrX_v2.bed"
-ukb_bim_X="/well/lindgren/UKBIOBANK/DATA/CALLS/ukb_snp_chrX_v2.bim"
-ukb_bed_Y="/well/lindgren/UKBIOBANK/DATA/CALLS/ukb_cal_chrY_v2.bed"
-ukb_bim_Y="/well/lindgren/UKBIOBANK/DATA/CALLS/ukb_snp_chrY_v2.bim"
-ukb_fam="/well/lindgren/UKBIOBANK/DATA/SAMPLE_FAM/ukb11867_cal_chr1_v2_s488363.fam"
-INITIAL_SAMPLES = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/samples/03_initial_qc.keep.sample_list'
-PHENOTYPES_TABLE = '/well/lindgren/UKBIOBANK/dpalmer/ukb_wes_phenotypes/' + TRANCHE + '/phenotypes.ht'
-PRUNED_CHRX_VARIANTS = '/well/lindgren/UKBIOBANK/dpalmer/ukb_genotype_plink/ukb_snp_chrX_pruned.prune.in'
-SUPERPOPS = "/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/superpopulation_labels.tsv"
+# Plink files - either from sequencing or genotype data
+BIM_X = sys.argv[1]
+BED_X = sys.argv[2]
+FAM_X = sys.argv[3]
+BIM_Y = sys.argv[4]
+BED_Y = sys.argv[5]
+FAM_Y = sys.argv[6]
+INITIAL_SAMPLES = sys.argv[7]
+PRUNED_CHRX_VARIANTS = sys.argv[8]
+SUPERPOPS = sys.argv[9]
 
 # Outputs
-IMPUTESEX_TABLE = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/samples/04_imputesex_'
-IMPUTESEX_FILE = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/samples/04_imputesex_'
-Y_NCALLED = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/samples/04_ycalled.tsv.bgz'
+IMPUTESEX_TABLE = sys.argv[10]
+IMPUTESEX_FILE = sys.argv[11]
+Y_NCALLED = sys.argv[12]
+
+REFERENCE = 'GRCh37' # Note that the reference genome could be different for genotyping data vs sequencing data due to age of technology - watch out!
+
+print("Inputs:")
+print("BIM_X; X chromrome plink bim file: ", BIM_X)
+print("BED_X; X chromrome plink bim file: ", BED_X)
+print("FAM_X; X chromrome plink bim file: ", FAM_X)
+print("BIM_Y; Y chromrome plink bim file: ", BIM_Y)
+print("BED_Y; Y chromrome plink bim file: ", BED_Y)
+print("FAM_Y; Y chromrome plink bim file: ", FAM_Y)
+print("INITIAL_SAMPLES; initial samples following QC: ", INITIAL_SAMPLES)
+print("PRUNED_CHRX_VARIANTS; pruned chromosome X variants for sex imputation: ", PRUNED_CHRX_VARIANTS)
+print("SUPERPOPS; 1000G labels file: ", SUPERPOPS)
+
+print("Outputs:")
+print("IMPUTESEX_TABLE; imputed sex hail table output prefix: ", IMPUTESEX_TABLE)
+print("IMPUTESEX_FILE; imputed sex tsv.bgz file output prefix: ", IMPUTESEX_FILE)
+print("Y_NCALLED; calls on y tsv.bgz file output prefix: ", Y_NCALLED)
+
+hail_init(default_reference=REFERENCE)
 
 ht_initial_samples = hl.import_table(INITIAL_SAMPLES, no_header=True, key='f0')
 ht_pruned_chrx_variants = hl.import_table(PRUNED_CHRX_VARIANTS, no_header=True)
 ht_pruned_chrx_variants = ht_pruned_chrx_variants.transmute(rsid=ht_pruned_chrx_variants.f0).key_by('rsid')
-sample_annotations = hl.read_table(PHENOTYPES_TABLE)
 
 # Read in the plink file
-mt = hl.import_plink(bed=ukb_bed_X, bim=ukb_bim_X, fam=ukb_fam, reference_genome='GRCh37')
+mt = hl.import_plink(bed=BED_X, bim=BIM_X, fam=FAM_X, reference_genome=REFERENCE)
 mt = mt.key_rows_by(mt.rsid)
 mt = mt.filter_cols(hl.is_defined(ht_initial_samples[mt.col_key]))
 mt = mt.filter_rows(hl.is_defined(ht_pruned_chrx_variants[mt.row_key]))
@@ -62,15 +68,14 @@ for pop in ["AFR", "AMR", "EAS", "EUR", "SAS"]:
 	print('n variants:')
 	print(n[0])
 	imputed_sex = hl.impute_sex(mt_tmp.GT, female_threshold=0.2, male_threshold=0.8)
-	mt_tmp = mt_tmp.annotate_cols(phenotype = sample_annotations[mt_tmp.s])
 	mt_tmp = mt_tmp.annotate_cols(impute_sex = imputed_sex[mt_tmp.s])
 	IMPUTESEX_FILE_tmp = IMPUTESEX_FILE + pop + '.tsv.bgz'
 	IMPUTESEX_TABLE_tmp = IMPUTESEX_TABLE + pop + '.ht'
-	mt_tmp.cols().select('impute_sex', 'phenotype').flatten().export(IMPUTESEX_FILE_tmp)
+	mt_tmp.cols().select('impute_sex').flatten().export(IMPUTESEX_FILE_tmp)
 	mt_tmp.cols().write(IMPUTESEX_TABLE_tmp, overwrite=True)
 
 # Now, look on the Y chromosome, and determine non-missing allele count on the y.
-mt = hl.import_plink(bed=ukb_bed_Y, bim=ukb_bim_Y, fam=ukb_fam, reference_genome='GRCh37')
+mt = hl.import_plink(bed=BED_Y, bim=BIM_Y, fam=FAM_Y, reference_genome=REFERENCE)
 mt = mt.filter_cols(hl.is_defined(ht_initial_samples[mt.col_key]))
 mt = mt.filter_rows(mt.locus.in_y_nonpar() | mt.locus.in_y_par())
 mt = hl.sample_qc(mt, name='qc')

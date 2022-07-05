@@ -7,15 +7,31 @@ source('utils/pretty_plotting.r')
 # Please these numbers based on what the plotting below looks like!
 source("utils/r_options.r")
 
-# suppressPackageStartupMessages(library("argparse"))
+# This is commented because args are called from 03_2_initial_sample_qc_filter.r, which also runs all this and 
+# generates the plots.
 
+# suppressPackageStartupMessages(library("argparse"))
 # parser <- ArgumentParser()
-# parser$add_argument("--initial_sample_qc_file", required=TRUE, help="Path to INITIAL_SAMPLE_QC_FILE output from 03_0_initial_sample_qc.py")
-# parser$add_argument("--sample_information", required=TRUE,
-#     help=paste0("Path to sample information file (aka phenotype file) - this should contain two columns PCT_CHIMERAS and ",
-#         "PCT_CONTAMINATION, the chimeric read % and freemix contamination %, taken from the GATK/picard metadata. Also include any ",
-#         "factor you would like to split on and edit the commented code in this file to plot.")
+# parser$add_argument("--tranche", default='200k', help = "Which exome sequencing tranche?")
 # args <- parser$parse_args()
+
+CHR <- 1
+
+# Inputs:
+INITIAL_SAMPLE_QC_FILE <- paste0(
+    '/well/lindgren/UKBIOBANK/dpalmer/wes_', TRANCHE,
+    '/ukb_wes_qc/data/samples/03_chr', CHR, '_initial_sample_qc.tsv.bgz')
+
+# Outputs:
+INITIAL_COMBINED_SAMPLE_QC_FILE <- paste0(
+    '/well/lindgren/UKBIOBANK/dpalmer/wes_', TRANCHE, '/ukb_wes_qc/data/samples/03_initial_sample_qc.tsv')
+
+parser$add_argument("--initial_sample_qc_file", required=TRUE, help="Path to INITIAL_SAMPLE_QC_FILE output from 03_0_initial_sample_qc.py")
+parser$add_argument("--sample_information", required=TRUE,
+    help=paste0("Path to sample information file (aka phenotype file) - this should contain two columns PCT_CHIMERAS and ",
+        "PCT_CONTAMINATION, the chimeric read % and freemix contamination %, taken from the GATK/picard metadata. Also include any ",
+        "factor you would like to split on and edit the commented code in this file to plot.")
+args <- parser$parse_args()
 
 INITIAL_SAMPLE_QC_FILE <- args$initial_sample_qc_file
 SAMPLE_INFORMATION <- args$sample_information
@@ -26,10 +42,89 @@ SAMPLE_INFORMATION <- args$sample_information
 # In particular, this file should include the FREEMIX contaminiation and PCT_CHIMERAS (Chimeric read percentaage) information (if available).
 # If the GATK pipeline was run, these metrics should be available in the GATK/Picard metadeta.
 
-df <- fread(cmd = paste('zcat', INITIAL_SAMPLE_QC_FILE),
-    stringsAsFactors=FALSE, sep='\t', header=TRUE) %>% 
-select(c(s, starts_with('qc_padded_target'), starts_with('gq'), starts_with('dp')))
-df_pheno <- fread(SAMPLE_INFORMATION)
+dt <- fread(cmd = paste('zcat', INITIAL_SAMPLE_QC_FILE),
+    stringsAsFactors=FALSE, sep='\t', header=TRUE) %>% select(c(s, starts_with('qc_padded_target'), starts_with('gq'), starts_with('dp')))
+dt <- dt %>% mutate(
+    dp.stdev_sum = (dp.stdev)^2 * dp.n,
+    gq.stdev_sum = (gq.stdev)^2 * gq.n
+    )
+
+setkey(dt, 's')
+
+for (CHR in seq(2,22)) {
+    # Input files
+    cat(paste0("chromosome ", CHR, "\n"))
+    INITIAL_SAMPLE_QC_FILE <- paste0(
+        '/well/lindgren/UKBIOBANK/dpalmer/wes_', TRANCHE,
+        '/ukb_wes_qc/data/samples/03_chr', CHR, '_initial_sample_qc.tsv.bgz')
+
+    dt_tmp <- fread(
+        cmd = paste('zcat', INITIAL_SAMPLE_QC_FILE),
+        stringsAsFactors=FALSE, sep='\t', header=TRUE) %>% select(c(s, starts_with('qc_padded_target'), starts_with('gq'), starts_with('dp')))
+    names(dt_tmp) <- c('s', paste0('tmp_',names(dt_tmp)[-1]))
+    setkey(dt_tmp, 's')
+
+    dt  <- merge(dt, dt_tmp)
+
+    dt <- dt %>% mutate(
+        # Mins
+        qc_padded_target.dp_stats.min = pmin(qc_padded_target.dp_stats.min, tmp_qc_padded_target.dp_stats.min),
+        qc_padded_target.gq_stats.min = pmin(qc_padded_target.gq_stats.min, tmp_qc_padded_target.gq_stats.min),
+        
+        # Maxs
+        qc_padded_target.dp_stats.max = pmax(qc_padded_target.dp_stats.max, tmp_qc_padded_target.dp_stats.max),
+        qc_padded_target.gq_stats.max = pmax(qc_padded_target.gq_stats.max, tmp_qc_padded_target.gq_stats.max),
+        
+        # Counts
+        qc_padded_target.n_called = qc_padded_target.n_called + tmp_qc_padded_target.n_called,
+        qc_padded_target.n_not_called = qc_padded_target.n_not_called + tmp_qc_padded_target.n_not_called,
+        qc_padded_target.n_filtered = qc_padded_target.n_filtered + tmp_qc_padded_target.n_filtered,
+        qc_padded_target.n_hom_ref = qc_padded_target.n_hom_ref + tmp_qc_padded_target.n_hom_ref,
+        qc_padded_target.n_het = qc_padded_target.n_het + tmp_qc_padded_target.n_het,
+        qc_padded_target.n_hom_var = qc_padded_target.n_hom_var + tmp_qc_padded_target.n_hom_var,
+        qc_padded_target.n_non_ref = qc_padded_target.n_non_ref + tmp_qc_padded_target.n_non_ref,
+        qc_padded_target.n_singleton = qc_padded_target.n_singleton + tmp_qc_padded_target.n_singleton,
+        qc_padded_target.n_snp = qc_padded_target.n_snp + tmp_qc_padded_target.n_snp,
+        qc_padded_target.n_insertion = qc_padded_target.n_insertion + tmp_qc_padded_target.n_insertion,
+        qc_padded_target.n_deletion = qc_padded_target.n_deletion + tmp_qc_padded_target.n_deletion,
+        qc_padded_target.n_transition = qc_padded_target.n_transition + tmp_qc_padded_target.n_transition,
+        qc_padded_target.n_transversion = qc_padded_target.n_transversion + tmp_qc_padded_target.n_transversion,
+        qc_padded_target.n_star = qc_padded_target.n_star + tmp_qc_padded_target.n_star,
+
+        # Means
+        dp.sum = dp.sum + tmp_dp.sum,
+        gq.sum = gq.sum + tmp_gq.sum,
+
+        # Stdevs
+        dp.stdev_sum = dp.stdev_sum + (tmp_dp.stdev)^2 * tmp_dp.n,
+        gq.stdev_sum = dp.stdev_sum + (tmp_gq.stdev)^2 * tmp_gq.n,
+
+        # N
+        dp.n = dp.n + tmp_dp.n,
+        gq.n = gq.n + tmp_gq.n
+    ) %>% select(c(s, starts_with('qc_padded_target'), starts_with('dp'), starts_with('gq')))
+    setkey(dt, 's')
+}
+
+dt <- dt %>% mutate(
+    # Ratios
+    qc_padded_target.call_rate = qc_padded_target.n_called / (qc_padded_target.n_called + qc_padded_target.n_not_called + qc_padded_target.n_filtered),
+    qc_padded_target.r_ti_tv = ifelse(qc_padded_target.n_transversion == 0, NA, qc_padded_target.n_transition / qc_padded_target.n_transversion),
+    qc_padded_target.r_het_hom_var = ifelse(qc_padded_target.n_hom_var == 0, NA, qc_padded_target.n_het / qc_padded_target.n_hom_var),
+    qc_padded_target.r_insertion_deletion = ifelse(qc_padded_target.n_deletion == 0, NA, qc_padded_target.n_insertion / qc_padded_target.n_deletion),
+    
+    # Means
+    qc_padded_target.dp_stats.mean = dp.sum / dp.n,
+    qc_padded_target.gq_stats.mean = gq.sum / gq.n,
+
+    # Stdevs
+    qc_padded_target.dp_stats.stdev = sqrt(dp.stdev_sum / dp.n),
+    qc_padded_target.gq_stats.stdev = sqrt(gq.stdev_sum / gq.n)
+    ) %>% select(c('s', starts_with('qc_padded_target')))
+
+setkey(dt, 's')
+
+df_pheno <- fread(SAMPLE_INFORMATION) # Here we assume that chimeric reads and pct contamination have column names 'PCT_CONTAMINATION' and 'PCT_CHIMERAS' respectively.
 df <- merge(df_pheno, df,  by='s')
 
 names(df) <- gsub("qc_padded_target\\.", "", names(df))

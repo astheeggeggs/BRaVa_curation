@@ -14,17 +14,17 @@ source("utils/helpers.r")
 suppressPackageStartupMessages(library("argparse"))
 
 parser <- ArgumentParser()
-parser$add_argument("--imputesex_file", help = "Imputed sex tsv.bgz file prefix")
-parser$add_argument("--y_called_file", help = "Y-called file output from 06_0_impute_sex_superpopulations.py")
-parser$add_argument("--sexcheck_list", help = "Output file of samples that fail sex-check")
+parser$add_argument("--tranche", default='200k', help = "Which exome sequencing tranche?")
 args <- parser$parse_args()
 
+TRANCHE <- args$tranche
+
 # Inputs:
-IMPUTESEX_FILE <- args$imputesex_file
-Y_NCALLED_FILE <- args$y_called_file
+IMPUTESEX_FILE <- paste0('/well/lindgren/UKBIOBANK/dpalmer/wes_', TRANCHE, '/ukb_wes_qc/data/samples/04_imputesex.tsv.bgz')
+Y_NCALLED_FILE <- paste0('/well/lindgren/UKBIOBANK/dpalmer/wes_', TRANCHE, '/ukb_wes_qc/data/samples/04_ycalled.tsv.bgz')
 
 # Outputs:
-SEXCHECK_LIST <- args$sexcheck_list
+SEXCHECK_LIST <- paste0('/well/lindgren/UKBIOBANK/dpalmer/wes_', TRANCHE, '/ukb_wes_qc/data/samples/04_sexcheck.remove.sample_list')
 T_impute_sex <- c(0.2, 0.8)
 
 dt_y <- fread(cmd = paste('zcat', Y_NCALLED_FILE), sep='\t', stringsAsFactors=FALSE, header=TRUE, data.table=FALSE)
@@ -32,7 +32,7 @@ dt_false <- list()
 
 for (pop in c("AFR", "AMR", "EAS", "EUR", "SAS")) {
 
-  dt <- fread(cmd = paste('zcat', paste0(IMPUTESEX_FILE, "_", pop, ".tsv.bgz")), sep='\t', stringsAsFactors=FALSE, header=TRUE, data.table=FALSE) %>%
+  dt <- fread(cmd = paste('zcat', gsub(".tsv", paste0("_", pop, ".tsv"), IMPUTESEX_FILE)), sep='\t', stringsAsFactors=FALSE, header=TRUE, data.table=FALSE) %>%
     mutate(imputed_sex=as.factor(ifelse(impute_sex.is_female == TRUE, 'Female', 'Male')))
 
   dt <- merge(dt, dt_y, by='s')
@@ -62,7 +62,6 @@ for (pop in c("AFR", "AMR", "EAS", "EUR", "SAS")) {
   ggsave(paste0(PLOTS, '04_imputesex_histogram_', pop, '.pdf'), p, width=160, height=90, units='mm')
   ggsave(paste0(PLOTS, '04_imputesex_histogram_', pop, '.jpg'), p, width=160, height=90, units='mm', dpi=500)
 
-  # Replace this with a function that extracts the submitted sex if provided.
   dt_pheno <- create_pheno_dt(TRANCHE)
   dt <- merge(dt, dt_pheno)
 

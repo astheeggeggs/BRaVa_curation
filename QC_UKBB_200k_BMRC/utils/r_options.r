@@ -1,7 +1,8 @@
-# Plotting directory for all figures
+# 03_2_initial_sample_qc_plot.r
 PLOTS <- '/set/your/plotting/directory'
 
 # Define some thresholds
+
 # 03_2_initial_sample_qc_filter.r
 T_sample_callRate <- 0.93
 T_pct_contamination <- 0.02

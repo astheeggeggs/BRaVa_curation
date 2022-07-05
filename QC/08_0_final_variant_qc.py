@@ -17,22 +17,6 @@ REFERENCE = 'GRCh38'
 # Outputs
 VARIANT_QC_FILE = sys.argv[8]
 
-hail_init.hail_bmrc_init('logs/hail/hail_export.log', REFERENCE)
-
-# # Inputs:
-# TRANCHE = '200k'
-# CHR = '20'
-# MT = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/filtered/ukb_wes_' + TRANCHE + '_filtered_hardcalls_chr' + CHR + '.mt'
-# IMPUTESEX_TABLE = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/samples/04_imputesex_'
-# SUPERPOPS = "/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/superpopulation_labels.tsv"
-# SEXCHECK_LIST = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/samples/04_sexcheck.remove.sample_list'
-# RELATED_SAMPLES = '/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/samples/07_king.related.sample_list'
-# INITIAL_VARIANT_LIST = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/variants/02_prefilter_chr' + CHR + '.keep.variant.ht'
-# SAMPLE_LIST_INITIAL_QC = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/samples/03_initial_qc.keep.sample_list'
-
-# # Outputs:
-# VARIANT_QC_FILE = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/variants/08_final_qc.variants_chr' + CHR + '_'
-
 print("Inputs:")
 print('MT; input matrix table: ', MT)
 print('IMPUTESEX_TABLE; input file prefix of .tsvs file to plot imputed sex information output from 06_0_impute_sex_superpopulations.py: ', IMPUTESEX_TABLE)
@@ -45,6 +29,8 @@ print('SAMPLE_LIST_INITIAL_QC; set of initial samples output from 03_01_initial_
 
 print("Outputs:")
 print('VARIANT_QC_FILE; output .tsv file variant QC information: ', VARIANT_QC_FILE)
+
+hl.init(default_reference=REFERENCE)
 
 ht_superpops = hl.import_table(SUPERPOPS, impute=True).key_by("sample.ID").select("classification_strict")
 ht_related_samples = hl.import_table(RELATED_SAMPLES, no_header=True, key='f0')
@@ -63,7 +49,6 @@ for pop in ["AFR", "AMR", "EAS", "EUR", "SAS"]:
 	impute_sex_annotations = hl.read_table(IMPUTESEX_TABLE + pop + '.ht')
 	mt = mt.annotate_cols(filter_pop = (mt.classification_strict == pop))
 	mt_pop = mt.filter_cols(mt.filter_pop == True)
-	print(mt_pop.count())
 	mt_pop = mt_pop.annotate_cols(imputesex = impute_sex_annotations[mt_pop.col_key])
 	mt_pop = hl.variant_qc(mt_pop, name='variant_qc')
 	mt_pop = mt_pop.annotate_rows(

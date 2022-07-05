@@ -1,36 +1,30 @@
 import hail as hl
-import sys
+import argparse
 
 from ukb_utils import hail_init
 from ukb_utils import genotypes
 
-# # Inputs:
-# CHR = '20'
-# MT_HARDCALLS = '/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/filtered/ukb_wes_200k_filtered_hardcalls_chr' + CHR + '.mt'
-# IMPUTESEX_TABLE = '/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/samples/04_imputesex_'
-# SUPERPOPS = "/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/superpopulation_labels.tsv"
-# SEXCHECK_LIST = '/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/samples/04_sexcheck.remove.sample_list'
-# SAMPLE_LIST_INITIAL_QC = '/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/samples/03_initial_qc.keep.sample_list'
-# INITIAL_VARIANT_LIST = '/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/variants/02_prefilter_chr' + CHR + '.keep.variant.ht'
-# FINAL_VARIANT_LIST = '/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/variants/08_final_qc.pop.keep.variant_list'
+parser = argparse.ArgumentParser()
+parser.add_argument("--chr", type=str, default='20')
+parser.add_argument("--tranche", type=str, default='200k')
+args = parser.parse_args()
 
-# # Outputs:
-# SAMPLE_BEFORE_QC_FILE = '/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/samples/09_final_qc_chr' + CHR + '.before'
-# SAMPLE_AFTER_QC_FILE = '/well/lindgren/UKBIOBANK/dpalmer/wes_200k/ukb_wes_qc/data/samples/09_final_qc_chr' + CHR + '.after'
+TRANCHE = args.tranche
+CHR = str(args.chr)
 
-# Inputs
-MT_HARDCALLS = sys.argv[1]
-IMPUTESEX_TABLE = sys.argv[2]
-SUPERPOPS = sys.argv[3]
-SEXCHECK_LIST = sys.argv[4]
-SAMPLE_LIST_INITIAL_QC = sys.argv[5]
-INITIAL_VARIANT_LIST = sys.argv[6]
-FINAL_VARIANT_LIST = sys.argv[7]
+# Inputs:
+MT_HARDCALLS = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/filtered/ukb_wes_' + TRANCHE + '_filtered_hardcalls_chr' + CHR + '.mt'
+IMPUTESEX_TABLE = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/samples/04_imputesex_'
+SUPERPOPS = "/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/superpopulation_labels.tsv"
+SEXCHECK_LIST = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/samples/04_sexcheck.remove.sample_list'
+SAMPLE_LIST_INITIAL_QC = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/samples/03_initial_qc.keep.sample_list'
+INITIAL_VARIANT_LIST = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/variants/02_prefilter_chr' + CHR + '.keep.variant.ht'
+FINAL_VARIANT_LIST = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/variants/08_final_qc.pop.keep.variant_list'
 REFERENCE = 'GRCh38'
 
 # Outputs:
-SAMPLE_BEFORE_QC_FILE = sys.argv[8]
-SAMPLE_AFTER_QC_FILE = sys.argv[9]
+SAMPLE_BEFORE_QC_FILE = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/samples/09_final_qc_chr' + CHR + '.before'
+SAMPLE_AFTER_QC_FILE = '/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/samples/09_final_qc_chr' + CHR + '.after'
 
 hail_init.hail_bmrc_init('logs/hail/hail_export.log', 'GRCh38')
 

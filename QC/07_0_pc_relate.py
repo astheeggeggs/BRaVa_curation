@@ -1,8 +1,6 @@
 import hail as hl
 import sys
 
-hl.init()
-
 # Inputs
 MT_HARDCALLS = sys.argv[1]
 INITIAL_SAMPLES = sys.argv[2]
@@ -22,6 +20,8 @@ print('PRUNED_VARIANTS; set of LD-pruned high-quality variants in the autosomes:
 
 print("Outputs:")
 print('PC_RELATE_OUTPUT; output .tsv file with pc-relate information for plotting: ', PC_RELATE_OUTPUT)
+
+hl.init(default_reference=REFERENCE)
 
 ht_initial_samples = hl.import_table(INITIAL_SAMPLES, no_header=True, key='f0')
 ht_pruned_variants = hl.import_table(PRUNED_VARIANTS, no_header=True)

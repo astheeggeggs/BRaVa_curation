@@ -24,7 +24,7 @@ IMPUTESEX_FILE <- paste0('/well/lindgren/UKBIOBANK/dpalmer/wes_', TRANCHE, '/ukb
 Y_NCALLED_FILE <- paste0('/well/lindgren/UKBIOBANK/dpalmer/wes_', TRANCHE, '/ukb_wes_qc/data/samples/04_ycalled.tsv.bgz')
 
 # Outputs:
-SEXCHECK_LIST <- paste0('/well/lindgren/UKBIOBANK/dpalmer/wes_', TRANCHE, '/ukb_wes_qc/data/samples/04_sexcheck.remove.sample_list')
+SEXCHECK_LIST <- paste0('/well/lindgren/UKBIOBANK/dpalmer/wes_', TRANCHE, '/ukb_wes_qc/data/samples/04_sexcheck.remove.BRaVa.sample_list')
 T_impute_sex <- c(0.2, 0.8)
 
 dt_y <- fread(cmd = paste('zcat', Y_NCALLED_FILE), sep='\t', stringsAsFactors=FALSE, header=TRUE, data.table=FALSE)
@@ -41,7 +41,7 @@ for (pop in c("AFR", "AMR", "EAS", "EUR", "SAS")) {
   fills <- pal_d3('category20')(20)[c(11,12)]
 
   create_pretty_cumulative(dt, aes(impute_sex.f_stat), 'F-statistic',  threshold=T_impute_sex[1], threshold_max=T_impute_sex[2],
-      xlim=c(NA, NA), title='Cumulative Distribution of F-statistic', save_figure=TRUE, file=paste0(PLOTS,'04_F_stat_cdf_', pop))
+      xlim=c(NA, NA), title='Cumulative Distribution of F-statistic', save_figure=TRUE, file=paste0(PLOTS,'06_F_stat_cdf_', pop))
 
   p <- ggplot(dt, aes(x=impute_sex.f_stat, fill=imputed_sex)) +
     geom_histogram(binwidth=0.01, alpha=0.8, color='#7f7f7f') +
@@ -59,8 +59,8 @@ for (pop in c("AFR", "AMR", "EAS", "EUR", "SAS")) {
     geom_vline(xintercept=T_impute_sex[1], linetype='dashed') +
     geom_vline(xintercept=T_impute_sex[2], linetype='dashed')
 
-  ggsave(paste0(PLOTS, '04_imputesex_histogram_', pop, '.pdf'), p, width=160, height=90, units='mm')
-  ggsave(paste0(PLOTS, '04_imputesex_histogram_', pop, '.jpg'), p, width=160, height=90, units='mm', dpi=500)
+  ggsave(paste0(PLOTS, '06_imputesex_histogram_', pop, '.pdf'), p, width=160, height=90, units='mm')
+  ggsave(paste0(PLOTS, '06_imputesex_histogram_', pop, '.jpg'), p, width=160, height=90, units='mm', dpi=500)
 
   dt_pheno <- create_pheno_dt(TRANCHE)
   dt <- merge(dt, dt_pheno)
@@ -79,8 +79,8 @@ for (pop in c("AFR", "AMR", "EAS", "EUR", "SAS")) {
          y='Location',
          color='Reported Sex') 
 
-  ggsave(paste0(PLOTS, '04_imputesex_scatter_box_', pop, '.pdf'), p, width=160, height=90, units='mm')
-  ggsave(paste0(PLOTS, '04_imputesex_scatter_box_', pop, '.jpg'), p, width=160, height=90, units='mm', dpi=500)
+  ggsave(paste0(PLOTS, '06_imputesex_scatter_box_', pop, '.pdf'), p, width=160, height=90, units='mm')
+  ggsave(paste0(PLOTS, '06_imputesex_scatter_box_', pop, '.jpg'), p, width=160, height=90, units='mm', dpi=500)
 
   dt_false[[pop]] <- dt %>% filter(
     (impute_sex.f_stat > T_impute_sex[2] & Submitted_Gender == 'Female') |
@@ -98,8 +98,8 @@ for (pop in c("AFR", "AMR", "EAS", "EUR", "SAS")) {
   scale_y_continuous(label=scales::comma, breaks=scales::pretty_breaks(n=10)) +
   geom_point_rast(data=dt_false[[pop]], aes(x=impute_sex.f_stat, y=n_called), size=0.5, raster.dpi=500) + 
   theme_classic()
-  ggsave(paste0(PLOTS, '04_imputesex_scatter_', pop, '.pdf'), p, width=160, height=90, units='mm')
-  ggsave(paste0(PLOTS, '04_imputesex_scatter_', pop, '.jpg'), p, width=160, height=90, units='mm', dpi=500)
+  ggsave(paste0(PLOTS, '06_imputesex_scatter_', pop, '.pdf'), p, width=160, height=90, units='mm')
+  ggsave(paste0(PLOTS, '06_imputesex_scatter_', pop, '.jpg'), p, width=160, height=90, units='mm', dpi=500)
 }
 
 dt_out <- rbindlist(dt_false) %>% select(s)

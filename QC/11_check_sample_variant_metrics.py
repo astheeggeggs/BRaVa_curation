@@ -6,22 +6,22 @@ from ukb_utils import genotypes
 
 # Inputs
 QC_MT_PREFIX = sys.argv[1]
+IMPUTESEX_TABLE = sys.argv[2]
 REFERENCE = 'GRCh38'
 
 # Outputs
-VARIANT_QC_FILE = sys.argv[2]
-SAMPLE_QC_FILE = sys.argv[3]
-SAMPLE_QC_TARGET_FILE = sys.argv[4]
-IMPUTESEX_TABLE = sys.argv[5]
+VARIANT_QC_FILE = sys.argv[3]
+SAMPLE_QC_FILE = sys.argv[4]
+SAMPLE_QC_TARGET_FILE = sys.argv[5]
 
 print("Inputs:")
 print('QC_MT_PREFIX : prefix for 1000 genomes label specific matrix tables', QC_MT_PREFIX)
+print('IMPUTESEX_TABLE; input hail table with imputed sex: ', IMPUTESEX_TABLE)
 
 print("Outputs:")
 print('VARIANT_QC_FILE; output .tsv file variant QC information: ', VARIANT_QC_FILE)
 print('SAMPLE_QC_FILE; output .tsv file variant QC information: ', SAMPLE_QC_FILE)
 print('SAMPLE_QC_TARGET_FILE; output .tsv file variant QC information: ', SAMPLE_QC_TARGET_FILE)
-print('IMPUTESEX_TABLE; output hail table with imputed sex: ', IMPUTESEX_TABLE)
 
 hl.init(default_reference=REFERENCE)
 

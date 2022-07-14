@@ -173,7 +173,7 @@ create_pretty_boxplots <- function(df, aes, aes_col, threshold=NULL,
 
 create_pretty_cumulative <- function(df, aes, x_label, threshold=NULL, threshold_max=NULL,
     file='file_out', title='', width=160, height=90, scaling=1, save_figure=FALSE,
-    xlim=c(0,1), key_label='', print_p=FALSE, title.hjust=0.5, ggplot_theme=theme_classic)
+    xlim=NULL, key_label='', print_p=FALSE, title.hjust=0.5, ggplot_theme=theme_classic)
 {
     # These next ones are cdfs.
     p = ggplot(df, aes) + 
@@ -192,6 +192,9 @@ create_pretty_cumulative <- function(df, aes, x_label, threshold=NULL, threshold
     # p <- p + annotate('text', label=paste0(x_label, ' = ', threshold), x=threshold, y=mean(ylim), angle=90, vjust=-1)
     # ylim <- ggplot_build(p)$panel$ranges[[1]]$y.range
     # print(ylim)
+    if (!is.null(xlim)) {
+        p <- p + coord_cartesian(xlim=xlim)
+    }
 
     if (!is.null(threshold_max)) {
         p <- p + geom_vline(xintercept=threshold_max, linetype='dashed')# +

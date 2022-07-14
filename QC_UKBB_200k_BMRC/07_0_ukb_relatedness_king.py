@@ -5,12 +5,10 @@ from ukb_utils import hail_init
 from ukb_utils import genotypes
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--chr", type=str, default='20')
 parser.add_argument("--tranche", type=str, default='200k')
 args = parser.parse_args()
 
 TRANCHE = args.tranche
-CHR = str(args.chr)
 
 # Inputs
 INITIAL_SAMPLES='/well/lindgren/UKBIOBANK/dpalmer/wes_' + TRANCHE + '/ukb_wes_qc/data/samples/03_initial_qc.keep.sample_list'

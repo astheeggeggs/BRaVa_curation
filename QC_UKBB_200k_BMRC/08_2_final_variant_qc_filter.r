@@ -13,10 +13,10 @@ args <- parser$parse_args()
 TRANCHE <- args$tranche
 
 # Inputs
-COMBINED_VARIANT_QC_FILE <- "/well/lindgren/UKBIOBANK/dpalmer/wes_" + TRANCHE + "/ukb_wes_qc/data/variants/08_final_qc.variants_combined.tsv"
+COMBINED_VARIANT_QC_FILE <- paste0("/well/lindgren/UKBIOBANK/dpalmer/wes_", TRANCHE, "/ukb_wes_qc/data/variants/08_final_qc.variants_combined.tsv")
 # Outputs
-VARIANT_QC_LIST <- "/well/lindgren/UKBIOBANK/dpalmer/wes_" + TRANCHE + "/ukb_wes_qc/data/variants/08_final_qc.pop.keep.variant_list"
-VARIANT_SUMMARY <- "/well/lindgren/UKBIOBANK/dpalmer/wes_" TRANCHE + "/ukb_wes_qc/data/variants/08_variant_count.pop.tsv"
+VARIANT_QC_LIST <- paste0("/well/lindgren/UKBIOBANK/dpalmer/wes_", TRANCHE, "/ukb_wes_qc/data/variants/08_final_qc.pop.keep.variant_list")
+VARIANT_SUMMARY <- paste0("/well/lindgren/UKBIOBANK/dpalmer/wes_", TRANCHE, "/ukb_wes_qc/data/variants/08_variant_count.pop.tsv")
 
 dt <- fread(COMBINED_VARIANT_QC_FILE, header=TRUE, sep='\t')
 print("Initial number of variants:")

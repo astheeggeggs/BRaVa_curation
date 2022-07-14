@@ -134,8 +134,34 @@ PCs_to_use <- paste0('PC', seq(1,4))
 
 # Determine a classifier.
 set.seed(160487)
+T_RF <- 0.99
 rf <- randomForest(x=dt_train %>% select(PCs_to_use), y=as.factor(as.character(dt_train$super.population)), ntree=10000)
 rf_probs <- predict(rf, dt_predict %>% select(PCs_to_use), type='prob')
+
+rf_probs_plot <- melt(data.table(rf_probs), measure.vars=c("AFR", "AMR", "EAS", "EUR", "SAS"),
+  variable.name="population", value.name="prob")
+
+p <- ggplot(rf_probs_plot, aes(x=prob, color=factor(population))) + geom_density(stat="density") + 
+  theme_classic() + labs(color='1000G label', x='Random Forest Assignment Probability', y="Density") +
+  geom_vline(xintercept=T_RF, linetype='dashed')
+ggsave(paste0(PLOTS, '05_random_forest_assignment_density', '.pdf'), p, width=160, height=90, units='mm')
+ggsave(paste0(PLOTS, '05_random_forest_assignment_density', '.jpg'), p, width=160, height=90, units='mm', dpi=500)
+p <- ggplot(rf_probs_plot, aes(x=prob, color=factor(population))) + geom_density(stat="density") + 
+  theme_classic() + labs(color='1000G label', x='Random Forest Assignment Probability', y="Density") +
+  xlim((T_RF - 0.05), NA) + geom_vline(xintercept=T_RF, linetype='dashed')
+ggsave(paste0(PLOTS, '05_random_forest_assignment_density_zoom', '.pdf'), p, width=160, height=90, units='mm')
+ggsave(paste0(PLOTS, '05_random_forest_assignment_density_zoom', '.jpg'), p, width=160, height=90, units='mm', dpi=500)
+p <- ggplot(rf_probs_plot, aes(x=prob, color=factor(population))) + geom_density(stat="ecdf") + 
+  theme_classic() + labs(color='1000G label', x='Cumulative Proportion', y="Cumulative Density") +
+  geom_vline(xintercept=T_RF, linetype='dashed')
+ggsave(paste0(PLOTS, '05_random_forest_assignment_cum_density', '.pdf'), p, width=160, height=90, units='mm')
+ggsave(paste0(PLOTS, '05_random_forest_assignment_cum_density', '.jpg'), p, width=160, height=90, units='mm', dpi=500)
+p <- ggplot(rf_probs_plot, aes(x=prob, color=factor(population))) + geom_density(stat="ecdf") + 
+  theme_classic() + labs(color='1000G label', x='Cumulative Proportion', y="Cumulative Density") +
+  xlim((T_RF - 0.49), NA)  + geom_vline(xintercept=T_RF, linetype='dashed')
+  # coord_cartesian(xlim = c((T_RF - 0.05), NA)) + geom_vline(xintercept=T_RF, linetype='dashed')
+ggsave(paste0(PLOTS, '05_random_forest_assignment_cum_density_zoom', '.pdf'), p, width=160, height=90, units='mm')
+ggsave(paste0(PLOTS, '05_random_forest_assignment_cum_density_zoom', '.jpg'), p, width=160, height=90, units='mm', dpi=500)
 
 check_thres <- function(row, threshold) {
   return(!any(row > threshold))
@@ -155,3 +181,49 @@ dt_classify <- merge(dt_predict, dt_1kg, all=TRUE) %>% select(sample.ID, classif
 
 # Write the result to file.
 fwrite(dt_classify, file = "/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/superpopulation_labels.tsv", sep='\t')
+
+PCs <- c(1,3,5)
+
+if (perform_plotting)
+{
+    dt_plot <- dt_classify %>% filter(!is.na(classification_loose))
+    levels(dt_plot$classification_loose) <- c(levels(dt_plot$classification_loose) ,"1000 genomes")
+    dt_plot$classification_loose[is.na(dt_plot$classification_loose)] <- "1000 genomes"
+
+    for (i in PCs)
+    {
+        aes <- aes_string(x=paste0('PC', i), y=paste0('PC', i+1), color='classification_loose')
+        p <- create_pretty_scatter(dt_plot, aes,
+          save_figure=save_figures, file=paste0(PLOTS,'05_PC',i,'_PC',i+1,'_classify_loose'), n_x_ticks=5,
+          x_label=paste0('Principal Component ',i),
+          y_label=paste0('Principal Component ', i+1)
+          )
+        
+        p <- p + geom_point(data=dt_1kg, mapping=aes_string(x=paste0('PC',i), y=paste0('PC',i+1), shape='super.population'),
+          inherit.aes=FALSE, show.legend=FALSE)
+        # ggsave(file=paste0(PLOTS,'05_PC',i,'_PC',i+1,'_classify_loose_1kg_labelled.pdf'), width=160, height=90, units='mm')
+        ggsave(file=paste0(PLOTS,'05_PC',i,'_PC',i+1,'_classify_loose_1kg_labelled.jpg'), width=160, height=90, units='mm', dpi=500)
+
+        aes <- aes_string(x=paste0('PC',i), y=paste0('PC',i+1), color='classification_strict')
+        p <- create_pretty_scatter(dt_plot, aes,
+          save_figure=FALSE, file=paste0(PLOTS,'00_PC',i,'_PC',i+1,'_classify_strict'), n_x_ticks=5,
+          x_label=paste0('Principal Component ',i),
+          y_label=paste0('Principal Component ', i+1)
+          )
+        p <- p + geom_point(data=dt_1kg, mapping=aes_string(x=paste0('PC',i), y=paste0('PC',i+1), shape='super.population'),
+          inherit.aes=FALSE, show.legend=FALSE)
+        # ggsave(file=paste0(PLOTS,'05_PC',i,'_PC',i+1,'_classify_strict_1kg_labelled.pdf'), width=160, height=90, units='mm')
+        ggsave(file=paste0(PLOTS,'05_PC',i,'_PC',i+1,'_classify_strict_1kg_labelled.jpg'), width=160, height=90, units='mm', dpi=500)
+
+        p <- create_pretty_scatter(dt_plot %>% 
+          filter(classification_strict != "unsure") %>% 
+          mutate(classification_strict = as.factor(as.character(classification_strict))),
+          aes, save_figure=FALSE, n_x_ticks=5,
+          x_label=paste0('Principal Component ',i),
+          y_label=paste0('Principal Component ', i+1)
+          )
+        # ggsave(file=paste0(PLOTS,'05_PC',i,'_PC',i+1,'_classify_strict_1kg_labelled.pdf'), width=160, height=90, units='mm')
+        ggsave(file=paste0(PLOTS,'05_PC',i,'_PC',i+1,'_classify_strict_1kg_labelled.jpg'), width=160, height=90, units='mm', dpi=500)
+
+    }
+}

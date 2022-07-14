@@ -116,7 +116,10 @@ ggsave(paste0(file, '.jpg'), p, width=width*scaling, height=height*scaling, unit
 ggsave(paste0(file, '.pdf'), p, width=width*scaling, height=height*scaling, units='mm')
 
 # Number of singletons
-p <- ggplot(dt_after, aes(x=sample_qc.n_singleton, color=factor(population))) + geom_density(stat="density") + theme_classic() + labs(color='1000G label', x='Number of singletons') 
+p <- ggplot(dt_after, aes(x=sample_qc.n_singleton, color=factor(population))) +
+  geom_density(stat="density") + theme_classic() +
+  labs(color='1000G label', x='Number of singletons') +
+  scale_color_d3('category20')
 ggsave(paste0(PLOTS, '09_n_singletons_density', '.jpg'), p, width=width*scaling, height=height*scaling, units='mm')
 ggsave(paste0(PLOTS, '09_n_singletons_density', '.pdf'), p, width=width*scaling, height=height*scaling, units='mm')
 

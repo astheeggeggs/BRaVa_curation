@@ -38,8 +38,6 @@ dt_relationship[, concept_code_2 := gsub("\\.", "", concept_code_2)]
 dt_relationship_SNOMED_ICD <- dt_relationship %>% filter(
 	((vocabulary_id_1 == "ICD10CM") & (vocabulary_id_2 == "SNOMED"))
 	)
-# # Remove mappings that are clearly wrong
-# dt_relationship_SNOMED_ICD %>% filter(grepl("^[A-Z]", concept_code_2))
 
 dt_relationship_SNOMED_SNOMED <- dt_relationship %>% filter(
 	((vocabulary_id_1 == "SNOMED") & (vocabulary_id_2 == "SNOMED"))
@@ -92,7 +90,7 @@ for (row in seq(1, nrow(dt_SNOMED))) {
 		SNOMED_control_exclude_codes <- unique(unlist(dt_relationship_SNOMED_SNOMED %>% filter(grepl(regexp_control, paste0(" ", dt_relationship_SNOMED_SNOMED$concept_code_1, " "))) %>% select(concept_code_2)))
 		SNOMED_control_exclude_codes <- paste0(unique(SNOMED_control_exclude_codes, strsplit(gsub(" ", "", regexp_control), split="\\|")[[1]]), collapse=" | ")
 		dt_SNOMED$SNOMED_control_exclude_broad[row] <- SNOMED_control_exclude_codes
-		print(dt_SNOMED$SNOMED_case_include_broad[row])
+		print(dt_SNOMED$SNOMED_control_exclude_broad[row])
 	}
 }
 

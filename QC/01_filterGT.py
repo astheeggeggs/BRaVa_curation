@@ -67,7 +67,6 @@ mt = mt.filter_entries(
     keep = False
 )
 
-mt.write(MT, overwrite=True)
 mt = mt.checkpoint(MT, overwrite=True)
 mt = hl.read_matrix_table(MT)
 mt.select_entries(mt.GT).repartition(N_PARTITIONS).write(MT_HARDCALLS, overwrite=True)

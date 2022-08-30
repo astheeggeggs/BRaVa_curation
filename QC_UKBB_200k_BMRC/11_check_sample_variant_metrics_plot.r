@@ -25,7 +25,7 @@ dt_list[[1]] <- dt
 
 for (pop in c("AFR", "AMR", "EAS", "EUR", "SAS"))
 {
-    CHR <- 19#1
+    CHR <- 1
     # Output files
     COMBINED_VARIANT_QC_FILE <- paste0(VARIANT_QC_FILE, "_", pop, ".tsv")
     VARIANT_QC_FILE_CHR <- paste0(VARIANT_QC_FILE, "_chr", CHR, ".", pop, ".tsv.bgz")
@@ -33,7 +33,7 @@ for (pop in c("AFR", "AMR", "EAS", "EUR", "SAS"))
     dt_list <- list()
     dt_list[[1]] <- dt
 
-    for (CHR in c(seq(20,20))) {#c(seq(2,22), "X")) {
+    for (CHR in c(seq(2,22), "X")) {
         # Input files
         cat(paste0("chromosome ", CHR, "\n"))
         VARIANT_QC_FILE_CHR <- paste0(VARIANT_QC_FILE, "_chr", CHR, ".", pop, ".tsv.bgz")
@@ -134,13 +134,13 @@ add_ratios <- function(dt) {
 dt_list <- list()
 for (pop in c("AFR", "AMR", "EAS", "EUR", "SAS"))
 {
-    CHR <- 19#1
+    CHR <- 1
     cat(paste0(pop, "...\n"))
     cat("chromosome 1\n")
     dt <- read_and_key(paste0(SAMPLE_QC_FILE, "_chr", CHR, ".", pop, ".tsv.bgz"))
     dt_target <- read_and_key(paste0(SAMPLE_QC_TARGET_FILE, "_chr", CHR, ".", pop, ".tsv.bgz"))
 
-    for (CHR in seq(20,20)){#c(seq(2,22), "X")) {
+    for (CHR in c(seq(2,22), "X")) {
         # Input files
         cat(paste0("chromosome ", CHR, "\n"))
         dt_tmp <- read_and_key(paste0(SAMPLE_QC_FILE, "_chr", CHR, ".", pop, ".tsv.bgz"), tmp=TRUE)

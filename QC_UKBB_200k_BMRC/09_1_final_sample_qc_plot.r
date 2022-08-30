@@ -111,7 +111,7 @@ for (pop in c("AFR", "AMR", "EAS", "EUR", "SAS"))
 dt <- rbindlist(dt_list)
 
 fwrite(dt, file=SAMPLE_BEFORE_AFTER_COMBINED_QC_FILE, sep='\t')
-
+dt <- fread(SAMPLE_BEFORE_AFTER_COMBINED_QC_FILE)
 # Split by 1000G populations.
 if (save_figures)
 {

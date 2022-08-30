@@ -24,7 +24,7 @@ IMPUTESEX_FILE <- paste0('/well/lindgren/UKBIOBANK/dpalmer/wes_', TRANCHE, '/ukb
 Y_NCALLED_FILE <- paste0('/well/lindgren/UKBIOBANK/dpalmer/wes_', TRANCHE, '/ukb_wes_qc/data/samples/04_ycalled.tsv.bgz')
 
 # Outputs:
-SEXCHECK_LIST <- paste0('/well/lindgren/UKBIOBANK/dpalmer/wes_', TRANCHE, '/ukb_wes_qc/data/samples/04_sexcheck.remove.BRaVa.sample_list')
+SEXCHECK_LIST <- paste0('/well/lindgren/UKBIOBANK/dpalmer/wes_', TRANCHE, '/ukb_wes_qc/data/samples/06_sexcheck.remove.BRaVa.sample_list')
 T_impute_sex <- c(0.2, 0.8)
 
 dt_y <- fread(cmd = paste('zcat', Y_NCALLED_FILE), sep='\t', stringsAsFactors=FALSE, header=TRUE, data.table=FALSE)

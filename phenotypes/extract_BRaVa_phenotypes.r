@@ -416,6 +416,7 @@ if (length(ICD_and_procedures) >= 1) {
 setkey(dt_binary_procedures, "eid")
 
 dt_binary_classified <- merge(dt_binary_classified, dt_binary_procedures)
+fwrite(dt_binary_classified, file="/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/BRaVa_phenotypes_with_superpopulation_labels.tsv", sep="\t")
 
 for (i in 1:length(ICD_and_procedures)) {
 	dt_binary_classified[[paste(ICD_and_procedures[i], "total")]] <- dt_binary_classified[[ICD_and_procedures[i]]]

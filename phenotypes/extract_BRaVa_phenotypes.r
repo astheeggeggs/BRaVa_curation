@@ -227,7 +227,9 @@ extract_continuous_trait_counts <- function(
 	phenotype_file = "/well/lindgren-ukbb/projects/ukbb-11867/DATA/PHENOTYPE/PHENOTYPE_MAIN/ukb10844_ukb50009_updateddiagnoses_14012022.csv",
 	biomarker_file = "/well/lindgren/UKBIOBANK/DATA/Biomarker_data/ukb27722.csv",
 	manual_curation_mapping = "data/BRaVa_continuous_trait_manual_mappings.tsv",
-	superpopulation_labels = "/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/superpopulation_labels.tsv")
+	superpopulation_labels = "/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/superpopulation_labels.tsv",
+	write_continuous_data_file = TRUE
+)
 {
 	get_cols <- function(codes, dt, na.filter=FALSE)
 	{
@@ -271,9 +273,16 @@ extract_continuous_trait_counts <- function(
 	setkey(dt_classify, "eid")
 
 	dt_cts_classified <- merge(merge(dt_pheno, dt_classify), dt_biomarker)
-
-	# Finally, take the sum of the BMI, waist, and hip circumference to determine the non-NA sample size for WHR adjusted for BMI.
-	dt_cts_classified <- dt_cts_classified %>% mutate(WHR_adjusted_BMI = `48-0.0` + `49-0.0` + `21001-0.0`)
+	
+	dt_cts_classified <- dt_cts_classified %>% mutate(WHR = (`48-0.0` / `49-0.0`))
+	model <- lm(WHR ~ `21001-0.0`, data=dt_cts_classified)
+	WHR_adjust_BMI <- data.table(eid = dt_cts_classified$eid[as.integer(names(resid(model)))], WHR_adjust_BMI = resid(model))
+	setkey(WHR_adjust_BMI, "eid")
+	dt_cts_classified <- merge(dt_cts_classified, WHR_adjust_BMI, all=TRUE)
+	
+	if (write_continuous_data_file) {
+		fwrite(dt_cts_classified, file="/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/BRaVa_cts_phenotypes_with_superpopulation_labels.tsv", sep="\t")
+	}
 
 	sum_not_is.na <- function(col) { sum(!is.na(col)) }
 
@@ -416,6 +425,7 @@ if (length(ICD_and_procedures) >= 1) {
 setkey(dt_binary_procedures, "eid")
 
 dt_binary_classified <- merge(dt_binary_classified, dt_binary_procedures)
+fwrite(dt_binary_classified, file="/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/BRaVa_phenotypes_with_superpopulation_labels.tsv", sep="\t")
 
 for (i in 1:length(ICD_and_procedures)) {
 	dt_binary_classified[[paste(ICD_and_procedures[i], "total")]] <- dt_binary_classified[[ICD_and_procedures[i]]]

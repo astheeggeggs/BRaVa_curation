@@ -82,7 +82,7 @@ bed.ref <- bed(download_1000G("/well/lindgren/dpalmer/ukb_get_EUR/data"))
 
 outdir <- '/well/lindgren/dpalmer/ukb_get_EUR/'
 filename <- 'ukb_projected_to_1kg_PCs'
-n_PCs <- 10
+n_PCs <- 20
 save_figures <- TRUE
 perform_plotting <- TRUE
 creating_new_EUR_def <- TRUE
@@ -106,48 +106,90 @@ dt_pop <- fread("/well/lindgren/UKBIOBANK/dpalmer/1kg_for_EUR_assign/20130606_g1
   )
 )
 
-load(paste0(outdir, filename, "_data.Rdata"))
-PC.ref <- data.table(PC.ref)
-names(PC.ref) <- paste0("PC", seq(1,n_PCs))
+train_and_write_pop_labels <- function(
+  label_filename, T_RF, bed.ref, obj.bed, dt_pop,
+  outdir='/well/lindgren/dpalmer/ukb_get_EUR/',
+  filename = 'ukb_projected_to_1kg_PCs', write=TRUE,
+  n_PCs_predict=4, n_PCs=20)
+{ 
+  load(paste0(outdir, filename, "_data.Rdata"))
+  PC.ref <- data.table(PC.ref)
+  names(PC.ref) <- paste0("PC", seq(1, n_PCs))
 
-dt <- cbind(data.table(bed.ref$fam), PC.ref)
-setkey(dt, "sample.ID")
-setkey(dt_pop, "sample.ID")
-dt_1kg <- merge(dt, dt_pop)
+  dt <- cbind(data.table(bed.ref$fam), PC.ref)
+  setkey(dt, "sample.ID")
+  setkey(dt_pop, "sample.ID")
+  dt_1kg <- merge(dt, dt_pop)
 
-proj2 <- data.table(proj2)
-names(proj2) <- paste0("PC", seq(1,n_PCs))
-dt_ukb <- cbind(data.table(obj.bed$fam), proj2)
+  proj2 <- data.table(proj2)
+  names(proj2) <- paste0("PC", seq(1, n_PCs))
+  dt_ukb <- cbind(data.table(obj.bed$fam), proj2)
 
-# Now, need to grab the population labels to train the random forest.
-dt_train = dt_1kg %>%
-  select(c(super.population, population, PC1, PC2, PC3, PC4, PC5, PC6, PC7, PC8, PC9, PC10))
+  # Now, need to grab the population labels to train the random forest.
+  dt_train = dt_1kg %>%
+    select(c(super.population, population,
+      PC1, PC2, PC3, PC4, PC5, PC6, PC7, PC8, PC9, PC10,
+      PC11, PC12, PC13, PC14, PC15, PC16, PC17, PC18, PC19, PC20))
 
-dt_predict = dt_ukb %>%
-  select(c(sample.ID, PC1, PC2, PC3, PC4, PC5, PC6, PC7, PC8, PC9, PC10))
+  dt_predict = dt_ukb %>%
+    select(c(sample.ID,
+      PC1, PC2, PC3, PC4, PC5, PC6, PC7, PC8, PC9, PC10,
+      PC11, PC12, PC13, PC14, PC15, PC16, PC17, PC18, PC19, PC20))
 
-PCs_to_use <- paste0('PC', seq(1,4))
+  PCs_to_use <- paste0('PC', seq(1, n_PCs_predict))
 
-# Determine a classifier.
-set.seed(160487)
-rf <- randomForest(x=dt_train %>% select(PCs_to_use), y=as.factor(as.character(dt_train$super.population)), ntree=10000)
-rf_probs <- predict(rf, dt_predict %>% select(PCs_to_use), type='prob')
+  # Determine a classifier.
+  set.seed(160487)
+  rf <- randomForest(x=dt_train %>% select(PCs_to_use), y=as.factor(as.character(dt_train$super.population)), ntree=10000)
+  rf_probs <- predict(rf, dt_predict %>% select(PCs_to_use), type='prob')
 
-check_thres <- function(row, threshold) {
-  return(!any(row > threshold))
+  check_thres <- function(row, threshold) {
+    return(!any(row > threshold))
+  }
+
+  unsure <- apply(rf_probs, 1, check_thres, T_RF)
+  classification <- as.character(predict(rf, dt_predict %>% select(PCs_to_use)))
+  dt_predict$classification_loose <- as.factor(classification)
+  classification[unsure] <- 'unsure'
+  dt_predict$classification_strict <- as.factor(classification)
+
+  dt_predict <- dt_predict %>% mutate(sample.ID = as.character(sample.ID)) %>% select(sample.ID, classification_strict, classification_loose, starts_with("PC"))
+  dt_predict <- data.table(dt_predict)
+  setkeyv(dt_predict, c("sample.ID", paste0("PC", seq(1,10))))
+  setkeyv(dt_1kg, c("sample.ID", paste0("PC", seq(1,10))))
+  dt_classify <- merge(dt_predict, dt_1kg, all=TRUE) %>% select(sample.ID, classification_strict, classification_loose, starts_with("PC"), super.population, population)
+
+  # Write the result to file.
+  if (write) {
+    fwrite(dt_classify, file = label_filename, sep='\t')
+  }
+  return(dt_classify)
 }
 
-unsure <- apply(rf_probs, 1, check_thres, T_RF)
-classification <- as.character(predict(rf, dt_predict %>% select(PCs_to_use)))
-dt_predict$classification_loose <- as.factor(classification)
-classification[unsure] <- 'unsure'
-dt_predict$classification_strict <- as.factor(classification)
+label_filename <- "/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/superpopulation_labels.tsv"
+n_pcs <- 20
+dt_classify <- train_and_write_pop_labels(label_filename, 0.99, bed.ref, obj.bed, dt_pop, n_PCs=20, write=FALSE, n_PCs_predict=4)
 
-dt_predict <- dt_predict %>% mutate(sample.ID = as.character(sample.ID)) %>% select(sample.ID, classification_strict, classification_loose, starts_with("PC"))
-dt_predict <- data.table(dt_predict)
-setkeyv(dt_predict, c("sample.ID", paste0("PC", seq(1,10))))
-setkeyv(dt_1kg, c("sample.ID", paste0("PC", seq(1,10))))
-dt_classify <- merge(dt_predict, dt_1kg, all=TRUE) %>% select(sample.ID, classification_strict, classification_loose, starts_with("PC"), super.population, population)
+label_filename <- "/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/superpopulation_labels_10_PCs.tsv"
+dt_classify <- train_and_write_pop_labels(label_filename, 0.99, bed.ref, obj.bed, dt_pop, n_PCs=20, write=TRUE, n_PCs_predict=10)
 
-# Write the result to file.
-fwrite(dt_classify, file = "/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/superpopulation_labels.tsv", sep='\t')
+label_filename <- "/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/superpopulation_labels_20_PCs.tsv"
+dt_classify <- train_and_write_pop_labels(label_filename, 0.99, bed.ref, obj.bed, dt_pop, n_PCs=20, write=TRUE, n_PCs_predict=20)
+
+dt_20 <- fread("/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/superpopulation_labels_20_PCs.tsv", key="sample.ID")
+dt_10 <- fread("/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/superpopulation_labels_10_PCs.tsv", key="sample.ID")
+dt_4 <- fread("/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/superpopulation_labels.tsv", key="sample.ID")
+
+library(ggplot2)
+library(ggvenn)
+
+dt <- merge(
+  dt_20 %>% select(sample.ID, classification_strict) %>% rename(classification_20=classification_strict),
+  dt_10 %>% select(sample.ID, classification_strict) %>% rename(classification_10=classification_strict), by='sample.ID'
+  )
+dt <- merge(
+  dt, dt_4 %>% select(sample.ID, classification_strict) %>% rename(classification_4=classification_strict),
+  by="sample.ID"
+  )
+
+fwrite(dt, "/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/superpopulation_labels_investigation.tsv")

@@ -207,14 +207,13 @@ create_pretty_cumulative <- function(df, aes, x_label, threshold=NULL, threshold
 }
 
 create_pretty_scatter <- function(dt, aes, file='file_out', save_figure=FALSE, 
-    key_label='', title='', limits=NULL, width=160, height=90, presentation=FALSE,
+    key_label='', title='', subtitle='', limits=NULL, width=160, height=90, presentation=FALSE,
     add_final_layer=FALSE, final_layer=NULL, n_x_ticks=10, n_y_ticks=10, x_label=NULL,
     y_label=NULL, print_p=FALSE, gradient=FALSE, midpoint=0, gradient_title="", title.hjust=0.5,
     legend_max_min=NULL, n_legend_step=4, xlim=NULL, ylim=NULL, ggplot_theme=theme_classic, alpha=0.6, size=1,
     include_qq_ribbon=FALSE, aes_ribbon=NULL, ribbon_p=0.95)
 {
     p <- ggplot(dt, aes)
-    print(dt)
     if (include_qq_ribbon) {
         p <- p + geom_ribbon(aes_ribbon, fill="grey80", color="grey80")
     }
@@ -226,7 +225,7 @@ create_pretty_scatter <- function(dt, aes, file='file_out', save_figure=FALSE,
     }
     p <- p +
         scale_color_d3('category20', limits=limits) +
-        labs(title=title, color=paste0(key_label)) +
+        labs(title=title, subtitle=subtitle, color=paste0(key_label)) +
         scale_x_continuous(breaks=scales::pretty_breaks(n=n_x_ticks)) +
         scale_y_continuous(breaks=scales::pretty_breaks(n=n_y_ticks)) +
         ggplot_theme() +
@@ -279,20 +278,20 @@ create_pretty_scatter <- function(dt, aes, file='file_out', save_figure=FALSE,
 }
 
 create_pretty_qq_plot <- function(dt, aes, file='file_out', save_figure=FALSE,
-    plot_title='', limits=NULL, width=110, height=100, n_x_ticks=10, n_y_ticks=10,
+    plot_title='', plot_subtitle='', limits=NULL, width=110, height=100, n_x_ticks=10, n_y_ticks=10,
     x_label=TeX("$-\\log_{10}(\\mathit{p}_{permutation})$"), 
     y_label=TeX("$-\\log_{10}(\\mathit{p}_{observed})$"),
     n_to_include=NULL, cex_labels=1, print_p=TRUE, gradient=FALSE,
     gradient_title="", title.hjust=0.5, legend_max_min=NULL, n_legend_step=4,
     xlim=NULL, ylim=NULL, y_x_col="grey40", ggplot_theme=theme_classic, alpha=0.6,
-    include_qq_ribbon=TRUE, aes_ribbon=NULL, ribbon_p=0.95, key_cols=c("pval"))
+    include_qq_ribbon=TRUE, aes_ribbon=NULL, ribbon_p=0.95, key_cols=c("pval"),
+    by_chr=FALSE)
 {
     cat("Creating scatter-plot...\n")
     dt <- data.table(dt)
     setkeyv(dt, cols=key_cols)
-    print(dt)
     p <- create_pretty_scatter(dt, aes, file=file, save_figure=FALSE,
-        title=plot_title, limits=limits,
+        title=plot_title, subtitle=plot_subtitle, limits=limits,
         width=width, height=height, n_x_ticks=n_x_ticks, n_y_ticks=n_y_ticks,
         x_label=x_label, y_label=y_label, gradient=gradient, gradient_title=gradient_title,
         title.hjust=title.hjust, legend_max_min=legend_max_min, n_legend_step=n_legend_step,
@@ -301,13 +300,16 @@ create_pretty_qq_plot <- function(dt, aes, file='file_out', save_figure=FALSE,
 
     cat("Adding y=x line...\n")
     p <- p + geom_abline(intercept=0, slope=1, color=y_x_col) #+ coord_fixed()
-
-    if (!is.null(n_to_include)) {
-        cat("Adding labels...\n")
-        p <- p + geom_label_repel(data=dt[(nrow(dt)-n_to_include+1):nrow(dt), ],
-            aes(label=labels), box.padding = 0.4, label.padding=0.1, point.padding = 0.2,
-            color = 'grey30', segment.color = 'grey50', max.overlaps=Inf,
-            size=cex_labels, segment.size=0.1, show.legend = FALSE)
+    if (by_chr) {
+        p <- p + facet_wrap(vars(chr), scales="free")
+    } else {
+        if (!is.null(n_to_include)) {
+            cat("Adding labels...\n")
+            p <- p + geom_label_repel(data=dt[(nrow(dt)-n_to_include+1):nrow(dt), ],
+                aes(label=labels), box.padding = 0.4, label.padding=0.1, point.padding = 0.2,
+                color = 'grey30', segment.color = 'grey50', max.overlaps=Inf,
+                size=cex_labels, segment.size=0.1, show.legend = FALSE)
+        }
     }
 
     if (save_figure) {
@@ -402,7 +404,7 @@ get_start_and_end <- function(chr_lengths) {
     return(list(start=start, end=end))
 }
 
-make_manhattan_plot = function(contigs, positions, pvals, log_OR=NULL, labels=NULL, size_by_p=FALSE, buffer=100000000, title='', threshold=5, chr_lengths=chr_lengths_38,
+make_manhattan_plot = function(contigs, positions, pvals, log_OR=NULL, label=NULL, size_by_p=FALSE, buffer=100000000, title='', subtitle='', threshold=5, chr_lengths=chr_lengths_38,
   colour_aes=NULL, log_p_vals=FALSE, significance_T=5e-8, ggplot_theme=theme_bw, two_tone=TRUE, by_OR=FALSE, colour_1='#2b59a1', colour_2='#5fb756',
   save_figure=FALSE, file='file_out', scaling=1, width=230, height=100, title_size=NULL, minus_log_p_max=NULL, print_p=FALSE)
 {  
@@ -412,10 +414,12 @@ make_manhattan_plot = function(contigs, positions, pvals, log_OR=NULL, labels=NU
     mutate(middle = floor(start + (end-start)/2),
            length = (end-start)) %>%
     mutate(shifted_position=middle + (contig - 1) * buffer)
-
-    dt_plot <- data.frame(contig=contigs, position=as.integer(positions), pval=as.numeric(pvals), labels=labels) %>%
+    if (!is.null(label)) {
+        label = rep(NULL, length(contigs))
+    }
+    dt_plot <- data.table(contig=gsub("chr", "", contigs), position=as.integer(positions), pval=as.numeric(pvals), labels=label) %>%
     mutate(x = dt_contigs[gsub('X', '23', contig), 'start'] + position + (as.integer(gsub('X', '23', contig))-1)*buffer)
-
+    
     # Include two tone chromosome plotting
     if (two_tone) {
         dt_plot <- dt_plot %>% mutate(colour=ifelse((as.integer(gsub('X', '23', contig)) %% 2) == 0, colour_1, colour_2))
@@ -437,9 +441,9 @@ make_manhattan_plot = function(contigs, positions, pvals, log_OR=NULL, labels=NU
 
     # Were log p-values passed?
     if(!log_p_vals) {
-        dt_plot <- dt_plot %>% mutate(y = -log10(pval)) %>% select(x, y, colour, labels)
+        dt_plot <- dt_plot %>% mutate(y = -log10(pval)) %>% select(x, y, colour, label)
     } else {
-        dt_plot <- dt_plot %>% mutate(y= pval) %>% select(x, y, colour, labels)
+        dt_plot <- dt_plot %>% mutate(y= pval) %>% select(x, y, colour, label)
     }
 
     if (size_by_p) {
@@ -451,15 +455,16 @@ make_manhattan_plot = function(contigs, positions, pvals, log_OR=NULL, labels=NU
     }
 
     if (size_by_p) {
-        p <- ggplot(dt_plot, aes(x=x,y=y,label=labels, col=colour, size=size)) + geom_point_rast()
+        p <- ggplot(dt_plot, aes(x=x,y=y,label=label, col=colour, size=size)) + geom_point_rast()
     } else {
-        p <- ggplot(dt_plot, aes(x=x,y=y,label=labels, col=colour)) + geom_point_rast(size=0.5)
+        p <- ggplot(dt_plot, aes(x=x,y=y,label=label, col=colour)) + geom_point_rast(size=0.5)
     }
 
     p <- p + geom_hline(yintercept=-log10(significance_T), color='#E15759', linetype='dashed') +
         scale_x_continuous(breaks=dt_contigs$shifted_position, labels=gsub(23, 'X', dt_contigs$contig)) +
         scale_y_continuous(breaks=scales::pretty_breaks(n=10)) +
-        labs(x='Chromosome', y=TeX("$-\\log_{10}(\\mathit{p})$"), title=title) + ggplot_theme()
+        labs(x='Chromosome', y=TeX("$-\\log_{10}(\\mathit{p})$"),
+            title=title, subtitle=subtitle) + ggplot_theme()
 
     if ((by_OR == FALSE) & (size_by_p==FALSE)) {
         p <- p + theme(legend.position = "none")
@@ -471,10 +476,10 @@ make_manhattan_plot = function(contigs, positions, pvals, log_OR=NULL, labels=NU
             values = levels(dt_plot$colour), labels=c("> 10", "1 - 10", "0.1 - 1", "< 0.1"))
     }
 
-    if (!is.null(labels))
+    if (!is.null(label))
         p <- p + geom_label_repel(
             data=subset(dt_plot, y > threshold), size = 5,
-            aes(label=labels), color='grey30', box.padding = 0.35, point.padding = 0.5, segment.color = 'grey50')
+            aes(label=label), color='grey30', box.padding = 0.35, point.padding = 0.5, segment.color = 'grey50')
 
     if (!is.null(title_size)) 
         p <- p + theme(plot.title = element_text(size=title_size))

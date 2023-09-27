@@ -6,7 +6,7 @@ library(googlesheets4)
 
 munge_BRaVa_ICD_proposals <- function() {
 	# Download and extract the case and control ICD9/10 codes from the BRaVa nominate phenotypes file
-	dt <- read_sheet("https://docs.google.com/spreadsheets/d/1YqdSyxf2OyoIYvLnDVj7NmbpebtppsgyJSq18gkVAWI/edit#gid=1716081249", sheet=4, skip=3)
+	dt <- read_sheet("https://docs.google.com/spreadsheets/d/1YqdSyxf2OyoIYvLnDVj7NmbpebtppsgyJSq18gkVAWI/edit#gid=1716081249", sheet=2, skip=3)
 	cols <- c(
 		"Description",
 		"ICD10_control_exclude", "ICD10_case_include",
@@ -381,7 +381,7 @@ extract_procedure_case_status <- function(dt_data, dt_query)
 	return(dt_data)
 }
 
-# Extract continous traits
+# Extract continuous traits
 extract_continuous_trait_counts()
 
 dt_query_ICD <- munge_BRaVa_ICD_proposals()

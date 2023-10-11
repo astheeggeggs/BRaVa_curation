@@ -44,12 +44,14 @@ dt_relationship_SNOMED_SNOMED <- dt_relationship %>% filter(
 	)
 
 # Loop over using the grepping
-dt <- read_sheet("https://docs.google.com/spreadsheets/d/1YqdSyxf2OyoIYvLnDVj7NmbpebtppsgyJSq18gkVAWI/edit#gid=1716081249", sheet=4, skip=3)
+dt <- read_sheet("https://docs.google.com/spreadsheets/d/1YqdSyxf2OyoIYvLnDVj7NmbpebtppsgyJSq18gkVAWI/edit#gid=1716081249", sheet="ICD_Phecode", skip=3)
 cols <- c(
 	"Description",
 	"ICD10_control_exclude grep (assuming hierarchy, no .)",
 	"ICD10_case_include grep (assuming hierarchy, no .)")
 dt <- dt[, cols, with=FALSE]
+# Remove empty rows
+dt <- dt %>% filter(!is.na(Description))
 
 dt_SNOMED <- dt
 dt_SNOMED$SNOMED_case_include <- NA
@@ -94,4 +96,6 @@ for (row in seq(1, nrow(dt_SNOMED))) {
 	}
 }
 
-fwrite(dt_SNOMED, sep="\t", file="data/SNOMED_brava_ICD.tsv")
+fwrite(dt_SNOMED, sep="\t", file="data/SNOMED_brava_ICD_updated.tsv")
+
+# Compare against the existing codes.

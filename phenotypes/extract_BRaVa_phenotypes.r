@@ -3,15 +3,18 @@ library(data.table)
 library(dplyr)
 library(ggplot2)
 library(googlesheets4)
+library(stringr)
 
 munge_BRaVa_ICD_proposals <- function() {
 	# Download and extract the case and control ICD9/10 codes from the BRaVa nominate phenotypes file
-	dt <- read_sheet("https://docs.google.com/spreadsheets/d/1YqdSyxf2OyoIYvLnDVj7NmbpebtppsgyJSq18gkVAWI/edit#gid=1716081249", sheet=2, skip=3)
+	dt <- read_sheet("https://docs.google.com/spreadsheets/d/1YqdSyxf2OyoIYvLnDVj7NmbpebtppsgyJSq18gkVAWI/edit#gid=1716081249", sheet="ICD_Phecode", skip=3)
 	cols <- c(
 		"Description",
 		"ICD10_control_exclude", "ICD10_case_include",
 		"ICD9_control_exclude", "ICD9_case_include")
 	dt <- dt[, cols, with=FALSE]
+	# Remove empty rows
+	dt <- dt %>% filter(!is.na(Description))
 	names(dt) <- c("phenotype", "ICD10_control_exclude", "ICD10_case_include", "ICD9_control_exclude", "ICD9_case_include")
 	dt <- data.table(dt)
 
@@ -267,7 +270,7 @@ extract_continuous_trait_counts <- function(
 	# Get population specific counts
 
 	# Merge with 1000G labels - this file is created using 05_estimate_superpopulation.r in the QC folder.
-	dt_classify <- fread("/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/superpopulation_labels.tsv")
+	dt_classify <- fread(superpopulation_labels)
 	dt_classify[, eid:=sample.ID]
 	dt_classify[, sample.ID:=NULL]
 	setkey(dt_classify, "eid")
@@ -276,12 +279,21 @@ extract_continuous_trait_counts <- function(
 	
 	dt_cts_classified <- dt_cts_classified %>% mutate(WHR = (`48-0.0` / `49-0.0`))
 	model <- lm(WHR ~ `21001-0.0`, data=dt_cts_classified)
-	WHR_adjust_BMI <- data.table(eid = dt_cts_classified$eid[as.integer(names(resid(model)))], WHR_adjust_BMI = resid(model))
+	WHR_adjust_BMI <- data.table(eid = dt_cts_classified$eid[as.integer(names(resid(model)))], WHR_adjusted_for_BMI = resid(model))
 	setkey(WHR_adjust_BMI, "eid")
 	dt_cts_classified <- merge(dt_cts_classified, WHR_adjust_BMI, all=TRUE)
 	
 	if (write_continuous_data_file) {
-		fwrite(dt_cts_classified, file="/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/BRaVa_cts_phenotypes_with_superpopulation_labels.tsv", sep="\t")
+		# Map the names back
+		tmp <- names(dt_cts_classified)
+		tmp <- gsub("-.*", "", tmp)
+		for (i in 1:length(tmp)) {
+			if (tmp[i] %in% dt_manual$UKB_code) {
+				tmp[i] <- dt_manual$Phenotype[which(dt_manual$UKB_code == tmp[i])]
+			}
+		}
+		names(dt_cts_classified) <- tmp
+		fwrite(dt_cts_classified, file="/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/BRaVa_cts_phenotypes_with_superpopulation_labels_updated.tsv", sep="\t")
 	}
 
 	sum_not_is.na <- function(col) { sum(!is.na(col)) }
@@ -303,7 +315,7 @@ extract_continuous_trait_counts <- function(
 
 munge_BRaVa_OPCS4_proposals <- function() {
 	# Download and extract the case and control ICD9/10 codes from the BRaVa nominate phenotypes file
-	dt <- read_sheet("https://docs.google.com/spreadsheets/d/1YqdSyxf2OyoIYvLnDVj7NmbpebtppsgyJSq18gkVAWI/edit#gid=1716081249", sheet=8)
+	dt <- read_sheet("https://docs.google.com/spreadsheets/d/1YqdSyxf2OyoIYvLnDVj7NmbpebtppsgyJSq18gkVAWI/edit#gid=1716081249", sheet="Procedures")
 	cols <- c("Procedures", "OPCS codes")
 
 	dt <- dt[, cols, with=FALSE]
@@ -390,6 +402,30 @@ extract_procedure_case_status <- function(dt_data, dt_query)
 	return(dt_data)
 }
 
+extract_covariates <- function(
+	phenotype_file = "/well/lindgren-ukbb/projects/ukbb-11867/DATA/PHENOTYPE/PHENOTYPE_MAIN/ukb10844_ukb50009_updateddiagnoses_14012022.csv")
+{
+	get_cols <- function(codes, dt, na.filter=FALSE)
+	{
+		cols <- c()
+		for (code in codes) { cols <- c(cols, grep(paste0("^", code, "\\-"), names(dt), value=TRUE)) }
+		return(cols)
+	}
+
+	dt <- fread(phenotype_file, na.strings=NULL, nrow=1)
+
+	# Extract the relevant columns for each of the encodings
+	covs <- c("22001", "21022")
+	cols <-  get_cols(covs, dt)
+	select_cols <- rep("character", (length(cols) + 1))
+	names(select_cols) <- c("eid", cols)
+
+	# Read in the entire file ensuring these columns are encoded as characters to avoid NA weirdness.
+	dt <- fread(phenotype_file, na.strings=NULL, select=select_cols)
+	names(dt) <- c("eid", "sex", "age")
+	return(dt)
+}
+
 # Extract continuous traits
 extract_continuous_trait_counts()
 
@@ -425,22 +461,75 @@ if (length(ICD_and_procedures) >= 1) {
 setkey(dt_binary_procedures, "eid")
 
 dt_binary_classified <- merge(dt_binary_classified, dt_binary_procedures)
-fwrite(dt_binary_classified, file="/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/BRaVa_phenotypes_with_superpopulation_labels.tsv", sep="\t")
 
 for (i in 1:length(ICD_and_procedures)) {
-	dt_binary_classified[[paste(ICD_and_procedures[i], "total")]] <- dt_binary_classified[[ICD_and_procedures[i]]]
-	dt_binary_classified[[paste(ICD_and_procedures[i], "total")]][which(dt_binary_classified[[paste(ICD_and_procedures[i], "procedures")]] == 1)] <- 1
+	dt_binary_classified[[paste(ICD_and_procedures[i], "ICD")]] <- dt_binary_classified[[ICD_and_procedures[i]]]
+	dt_binary_classified[[paste(ICD_and_procedures[i])]][which(dt_binary_classified[[paste(ICD_and_procedures[i], "procedures")]] == 1)] <- 1
 }
 
+fwrite(dt_binary_classified, file="/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/BRaVa_phenotypes_with_superpopulation_labels_updated.tsv", sep="\t")
+
 # Split by 1000G label and count
-dt_counts <- dt_binary_classified %>% group_by(classification_strict) %>% summarise(across(c(union(dt_query_ICD$phenotype, dt_query_OPCS4$phenotype), paste(ICD_and_procedures, c("procedures", "total"))), sum, na.rm=TRUE))
+dt_counts <- dt_binary_classified %>% group_by(classification_strict) %>% summarise(across(c(union(dt_query_ICD$phenotype, dt_query_OPCS4$phenotype), paste(ICD_and_procedures, c("procedures", "ICD"))), sum, na.rm=TRUE))
 dt_counts_t <- data.table::transpose(dt_counts, keep.names="phenotype", make.names="classification_strict")
 
 # Finally, comma separate and combine the ICD9 and ICD10 codes together for inclusion on ICD_phecode tab of BRaVa_Nominate_Phenotypes spreadsheet.
-fwrite(dt_counts_t, file="data/output/UKBB_case_counts.tsv", sep="\t")
+fwrite(dt_counts_t, file="data/output/UKBB_case_counts_updated.tsv", sep="\t")
 
-dt_counts <- dt_binary_classified %>% summarise(across(c(union(dt_query_ICD$phenotype, dt_query_OPCS4$phenotype), paste(ICD_and_procedures, c("procedures", "total"))), sum, na.rm=TRUE))
+dt_counts <- dt_binary_classified %>% summarise(across(c(union(dt_query_ICD$phenotype, dt_query_OPCS4$phenotype), paste(ICD_and_procedures, c("procedures", "ICD"))), sum, na.rm=TRUE))
 dt_counts_t <- data.table::transpose(dt_counts, keep.names="phenotype")
 names(dt_counts_t)[2] <- "count"
-fwrite(dt_counts_t, file="data/output/UKBB_case_counts_total.tsv", sep="\t")
+fwrite(dt_counts_t, file="data/output/UKBB_case_counts_total_updated.tsv", sep="\t")
 
+# To fill in the google sheets table
+dt_counts <- merge(fread("data/output/UKBB_case_counts_updated.tsv"), fread("data/output/UKBB_case_counts_total_updated.tsv"))
+
+# Merge in the age, sex, and age*sex, age^2*sex covariates for the continuous and case control traits.
+dt_cov <- extract_covariates()
+dt_binary_classified <- fread("/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/BRaVa_phenotypes_with_superpopulation_labels_updated.tsv")
+dt_cts_classified <- fread("/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/BRaVa_cts_phenotypes_with_superpopulation_labels_updated.tsv")
+
+dt_cov$eid <- as.character(dt_cov$eid)
+dt_binary_classified$eid <- as.character(dt_binary_classified$eid)
+dt_cts_classified$eid <- as.character(dt_cts_classified$eid)
+
+setkey(dt_cov, "eid")
+cols <- c(
+	"ICD9_string",
+	"ICD10_string",
+	"classification_loose",
+	"super.population",
+	"population",
+	"OPCS4_string")
+dt_binary_classified <- dt_binary_classified[, -cols, with=FALSE]
+setkey(dt_binary_classified, "eid")
+
+cols <- c(paste0("PC", seq(1,10)),
+	"super.population", "population",
+	"classification_strict", "classification_loose"
+	)
+dt_cts_classified <- dt_cts_classified[, -cols, with=FALSE]
+setkey(dt_cts_classified, "eid")
+
+dt <- merge(dt_cov, dt_binary_classified)
+dt <- merge(dt, dt_cts_classified)
+
+# Clean up names
+names(dt) <- gsub(" [ ]+", " ", names(dt))
+names(dt) <- gsub(" / ", "/", names(dt))
+names(dt) <- gsub("([a-z])(\\()", "\\1 \\2", names(dt))
+names(dt) <- gsub(" \\([A-Z,\\/a-z]+\\)", "", names(dt))
+names(dt) <- gsub(",", "", names(dt))
+names(dt) <- gsub("-", " ", names(dt))
+names(dt) <- gsub("[\\(,\\)]", "", names(dt))
+names(dt) <- gsub(" ", "_", names(dt))
+
+# Add in IID
+dt <- dt %>% rename(IID = eid)
+dt <- dt %>% mutate(age=as.integer(age), sex=as.integer(sex)) %>% mutate(age_sex = age*sex, age2 = age^2, age2_sex=age^2*sex)
+
+fwrite(dt, file="/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/BRaVa_phenotypes_with_superpopulation_labels_updated_combined.tsv", sep='\t')
+# Male only phenotype information
+fwrite(dt %>% filter(sex == 1) %>% select(-c("age_sex", "age2_sex")), file="/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/BRaVa_phenotypes_with_superpopulation_labels_updated_combined_M.tsv")
+# Female only phenotype information
+fwrite(dt %>% filter(sex == 0) %>% select(-c("age_sex", "age2_sex")), file="/well/lindgren/UKBIOBANK/dpalmer/superpopulation_assignments/BRaVa_phenotypes_with_superpopulation_labels_updated_combined_F.tsv")

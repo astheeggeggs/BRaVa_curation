@@ -279,8 +279,8 @@ create_pretty_scatter <- function(dt, aes, file='file_out', save_figure=FALSE,
 
 create_pretty_qq_plot <- function(dt, aes, file='file_out', save_figure=FALSE,
     plot_title='', plot_subtitle='', limits=NULL, width=110, height=100, n_x_ticks=10, n_y_ticks=10,
-    x_label=TeX("$-\\log_{10}(\\mathit{p}_{permutation})$"), 
-    y_label=TeX("$-\\log_{10}(\\mathit{p}_{observed})$"),
+    x_label=TeX("$-\\log_{10}(P_{permutation})$"), 
+    y_label=TeX("$-\\log_{10}(P_{observed})$"),
     n_to_include=NULL, cex_labels=1, print_p=TRUE, gradient=FALSE,
     gradient_title="", title.hjust=0.5, legend_max_min=NULL, n_legend_step=4,
     xlim=NULL, ylim=NULL, y_x_col="grey40", ggplot_theme=theme_classic, alpha=0.6,
@@ -463,7 +463,7 @@ make_manhattan_plot = function(contigs, positions, pvals, log_OR=NULL, label=NUL
     p <- p + geom_hline(yintercept=-log10(significance_T), color='#E15759', linetype='dashed') +
         scale_x_continuous(breaks=dt_contigs$shifted_position, labels=gsub(23, 'X', dt_contigs$contig)) +
         scale_y_continuous(breaks=scales::pretty_breaks(n=10)) +
-        labs(x='Chromosome', y=TeX("$-\\log_{10}(\\mathit{p})$"),
+        labs(x='Chromosome', y=TeX("$-\\log_{10}(P)$"),
             title=title, subtitle=subtitle) + ggplot_theme()
 
     if ((by_OR == FALSE) & (size_by_p==FALSE)) {

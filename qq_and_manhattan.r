@@ -124,8 +124,8 @@ read_and_create_qq_gene <- function(
 				cex_labels=2,
 				dt_to_plot %>% filter(Group==c, max_MAF==m) %>% mutate(labels=GeneName_biomart), aes(x=Pvalue_expected, y=Pvalue, color=test),
 				save_figure=FALSE, n_to_include=10,
-				x_label=TeX(r'($-\log_{10}(\mathit{p}_{expected})$)'), 
-				y_label=TeX("$-\\log_{10}(\\mathit{p}_{observed})$"),
+				x_label=TeX(r'($-\log_{10}(P_{expected})$)'), 
+				y_label=TeX(r'($-\log_{10}(P_{observed}$)'),
 				key_cols=c("test", "Pvalue"),
 				aes_ribbon = aes(ymin=clower, ymax=cupper),
 				width=170,
@@ -143,8 +143,8 @@ read_and_create_qq_gene <- function(
 				cex_labels=2,
 				dt_to_plot %>% mutate(labels=GeneName_biomart), aes(x=Pvalue_expected, y=Pvalue, color=test),
 				save_figure=FALSE, n_to_include=10,
-				x_label=TeX("$-\\log_{10}(\\mathit{p}_{expected})$"), 
-				y_label=TeX("$-\\log_{10}(\\mathit{p}_{observed})$"),
+				x_label=TeX(r'($-\log_{10}(P_{expected})$)'), 
+				y_label=TeX(r'($-\\log_{10}(P_{observed}$)'),
 				key_cols=c("test", "Pvalue"),
 				aes_ribbon = aes(ymin=clower, ymax=cupper),
 				width=170,
@@ -232,8 +232,8 @@ read_and_create_qq_variant <- function(
 		cex_labels=2,
 		dt, aes(x=Pvalue_expected, y=Pvalue),
 		save_figure=FALSE,
-		x_label=TeX("$-\\log_{10}(\\mathit{p}_{expected})$"), 
-		y_label=TeX("$-\\log_{10}(\\mathit{p}_{observed})$"),
+		x_label=TeX(r'($-\log_{10}(P_{expected})$)'), 
+		y_label=TeX(r'($-\\log_{10}(P_{observed}$)'),
 		key_cols="Pvalue",
 		aes_ribbon = aes(ymin=clower, ymax=cupper),
 		width=170, height=120,
@@ -245,8 +245,8 @@ read_and_create_qq_variant <- function(
 		cex_labels=2,
 		dt, aes(x=Pvalue_expected_MAF, y=Pvalue, col=as.factor(cols)),
 		save_figure=FALSE,
-		x_label=TeX("$-\\log_{10}(\\mathit{p}_{expected})$"), 
-		y_label=TeX("$-\\log_{10}(\\mathit{p}_{observed})$"),
+		x_label=TeX(r'($-\log_{10}(P_{expected})$)'), 
+		y_label=TeX(r'($-\\log_{10}(P_{observed}$)'),
 		key_cols="Pvalue",
 		include_qq_ribbon=FALSE,
 		width=170, height=120,
@@ -545,12 +545,12 @@ create_brava_qq_and_manhattan <- function(
 					cat(paste(paste(setdiff(paste0("chr", c(seq(1,22), "X")), unique(dt_results_sex_tmp$chromosome)), collapse=", "), "are missing\n")) 
 				}
 				for (file in paste0(indir, "variant/", variant_files)) {
-					if (grepl(".gz$", file)) {
+					if (!grepl(".gz$", file)) {
 						system(paste("gzip", file))
 					}
 				}
 				for (file in paste0(indir, "gene/", gene_files)) {
-					if (grepl(".gz$", file)) {
+					if (!grepl(".gz$", file)) {
 						system(paste("gzip", file))
 					}
 				}

@@ -3,7 +3,7 @@ library(dplyr)
 library(latex2exp)
 library(stringr)
 
-source("~/Repositories/BRaVa_curation/QC/utils/pretty_plotting.r")
+source("QC/utils/pretty_plotting.r")
 
 read_and_create_qq_gene <- function(
 	phenotype, outdir, indir, input_regexp, population, sex,
@@ -124,7 +124,7 @@ read_and_create_qq_gene <- function(
 				cex_labels=2,
 				dt_to_plot %>% filter(Group==c, max_MAF==m) %>% mutate(labels=GeneName_biomart), aes(x=Pvalue_expected, y=Pvalue, color=test),
 				save_figure=FALSE, n_to_include=10,
-				x_label=TeX("$-\\log_{10}(\\mathit{p}_{expected})$"), 
+				x_label=TeX(r'($-\log_{10}(\mathit{p}_{expected})$)'), 
 				y_label=TeX("$-\\log_{10}(\\mathit{p}_{observed})$"),
 				key_cols=c("test", "Pvalue"),
 				aes_ribbon = aes(ymin=clower, ymax=cupper),

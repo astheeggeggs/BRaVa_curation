@@ -56,7 +56,7 @@ do
       Rscript run_qq_and_manhattan.r \
       --phenotype=$phenotype \
       --population=$pop \
-      --sex "both_sexes"
+      --sex="both_sexes"
    done
 done
 

@@ -10,10 +10,16 @@ read_and_create_qq_gene <- function(
 	by_chr=FALSE, save=TRUE, gene_mapping="data/gene_mapping.txt.gz",
 	protein_coding="data/protein_coding_genes.txt.gz", filter_to_protein_coding=TRUE)
 {
+	if (.Platform$OS.type == "unix") {
+		zcat_cmd <- "zcat"
+	} else {
+		zcat_cmd <- "gzcat"
+	}
+
 	# Mapping file to obtain gene-start positions for each gene.
 	# The default mapping file is taken from Biomart, build 38 with stable ID, start and end, chr, and gene name.
 	if (grepl("*.gz$", gene_mapping)) {
-		dt_gene <- fread(cmd = paste("gzcat", gene_mapping))
+		dt_gene <- fread(cmd = paste(zcat_cmd, gene_mapping))
 	} else {
 		dt_gene <- fread(gene_mapping)
 	}
@@ -22,7 +28,7 @@ read_and_create_qq_gene <- function(
 	if (filter_to_protein_coding) {
 		# Filter to protein coding
 		if (grepl("*.gz$", protein_coding)) {
-			dt_gene_protein <- fread(cmd = paste("gzcat", protein_coding))
+			dt_gene_protein <- fread(cmd = paste(zcat_cmd, protein_coding))
 		} else {
 			dt_gene_protein <- fread(protein_coding)
 		}
@@ -46,7 +52,7 @@ read_and_create_qq_gene <- function(
 		chr <- gsub(".*chr([0-9X]+).*", "\\1", file)
 		cat(paste0("chromosome ", gsub(".*chr([0-9X]+).*", "\\1", file), "..."))
 		if (grepl("*.gz$", file)) {
-			dt[[chr]] <- fread(cmd=paste("gzcat", file))
+			dt[[chr]] <- fread(cmd=paste(zcat_cmd, file))
 		} else {
 			dt[[chr]] <- fread(file)
 		}
@@ -124,8 +130,8 @@ read_and_create_qq_gene <- function(
 				cex_labels=2,
 				dt_to_plot %>% filter(Group==c, max_MAF==m) %>% mutate(labels=GeneName_biomart), aes(x=Pvalue_expected, y=Pvalue, color=test),
 				save_figure=FALSE, n_to_include=10,
-				x_label=TeX(r'($-\log_{10}(P_{expected})$)'), 
-				y_label=TeX(r'($-\log_{10}(P_{observed}$)'),
+				x_label=TeX('$-\\log_{10}(P_{expected})$'), 
+				y_label=TeX('$-\\log_{10}(P_{observed})$'),
 				key_cols=c("test", "Pvalue"),
 				aes_ribbon = aes(ymin=clower, ymax=cupper),
 				width=170,
@@ -143,8 +149,8 @@ read_and_create_qq_gene <- function(
 				cex_labels=2,
 				dt_to_plot %>% mutate(labels=GeneName_biomart), aes(x=Pvalue_expected, y=Pvalue, color=test),
 				save_figure=FALSE, n_to_include=10,
-				x_label=TeX(r'($-\log_{10}(P_{expected})$)'), 
-				y_label=TeX(r'($-\\log_{10}(P_{observed}$)'),
+				x_label=TeX('$-\\log_{10}(P_{expected})$'), 
+				y_label=TeX('$-\\log_{10}(P_{observed})$'),
 				key_cols=c("test", "Pvalue"),
 				aes_ribbon = aes(ymin=clower, ymax=cupper),
 				width=170,
@@ -160,6 +166,12 @@ read_and_create_qq_variant <- function(
 	save=TRUE, split_by_MAF=FALSE, by_chr=FALSE
 	)
 {
+	if (.Platform$OS.type == "unix") {
+		zcat_cmd <- "zcat"
+	} else {
+		zcat_cmd <- "gzcat"
+	}
+
 	outdir <- ifelse(grepl("\\/$", outdir), gsub("\\/.*$", "\\/", outdir), paste0(outdir, "/"))
 
 	# Create the QQ plots
@@ -170,7 +182,7 @@ read_and_create_qq_variant <- function(
 		chr <- gsub(".*chr([0-9X]+).*", "\\1", file)
 		cat(paste0("chromosome ", gsub(".*chr([0-9X]+).*", "\\1", file), "..."))
 		if (grepl("*.gz$", file)) {
-			dt[[chr]] <- fread(cmd=paste("gzcat", file))
+			dt[[chr]] <- fread(cmd=paste(zcat_cmd, file))
 		} else {
 			dt[[chr]] <- fread(file)
 		}
@@ -232,8 +244,8 @@ read_and_create_qq_variant <- function(
 		cex_labels=2,
 		dt, aes(x=Pvalue_expected, y=Pvalue),
 		save_figure=FALSE,
-		x_label=TeX(r'($-\log_{10}(P_{expected})$)'), 
-		y_label=TeX(r'($-\\log_{10}(P_{observed}$)'),
+		x_label=TeX('$-\\log_{10}(P_{expected})$'), 
+		y_label=TeX('$-\\log_{10}(P_{observed})$'),
 		key_cols="Pvalue",
 		aes_ribbon = aes(ymin=clower, ymax=cupper),
 		width=170, height=120,
@@ -245,8 +257,8 @@ read_and_create_qq_variant <- function(
 		cex_labels=2,
 		dt, aes(x=Pvalue_expected_MAF, y=Pvalue, col=as.factor(cols)),
 		save_figure=FALSE,
-		x_label=TeX(r'($-\log_{10}(P_{expected})$)'), 
-		y_label=TeX(r'($-\\log_{10}(P_{observed}$)'),
+		x_label=TeX('$-\\log_{10}(P_{expected})$'), 
+		y_label=TeX('$-\\log_{10}(P_{observed})$'),
 		key_cols="Pvalue",
 		include_qq_ribbon=FALSE,
 		width=170, height=120,
@@ -267,10 +279,16 @@ read_and_create_gene_manhattan <- function(
 	significance_T=0.05/20000
 	)
 {
+	if (.Platform$OS.type == "unix") {
+		zcat_cmd <- "zcat"
+	} else {
+		zcat_cmd <- "gzcat"
+	}
+
 	# Mapping file to obtain gene-start positions for each gene.
 	# The default mapping file is taken from Biomart, build 38 with stable ID, start and end, chr, and gene name.
 	if (grepl("*.gz$", gene_mapping)) {
-		dt_gene <- fread(cmd = paste("gzcat", gene_mapping))
+		dt_gene <- fread(cmd = paste(zcat_cmd, gene_mapping))
 	} else {
 		dt_gene <- fread(gene_mapping)
 	}
@@ -285,7 +303,7 @@ read_and_create_gene_manhattan <- function(
 		chr <- gsub(".*chr([0-9X]+).*", "\\1", file)
 		cat(paste0("chromosome ", gsub(".*chr([0-9X]+).*", "\\1", file), "..."))
 		if (grepl("*.gz$", file)) {
-			dt[[chr]] <- fread(cmd=paste("gzcat", file))
+			dt[[chr]] <- fread(cmd=paste(zcat_cmd, file))
 		} else {
 			dt[[chr]] <- fread(file)
 		}
@@ -372,6 +390,12 @@ read_and_create_variant_manhattan <- function(
 	save=TRUE, significance_T=0.05/1e6
 	)
 {
+	if (.Platform$OS.type == "unix") {
+		zcat_cmd <- "zcat"
+	} else {
+		zcat_cmd <- "gzcat"
+	}
+
 	outdir <- ifelse(grepl("\\/$", outdir), gsub("\\/.*$", "\\/", outdir), paste0(outdir, "/"))
 	files <- dir(indir, pattern=input_regexp, full.names=TRUE)
 	dt <- list()
@@ -380,7 +404,7 @@ read_and_create_variant_manhattan <- function(
 		chr <- gsub(".*chr([0-9X]+).*", "\\1", file)
 		cat(paste0("chromosome ", gsub(".*chr([0-9X]+).*", "\\1", file), "..."))
 		if (grepl("*.gz$", file)) {
-			dt[[chr]] <- fread(cmd=paste("gzcat", file))
+			dt[[chr]] <- fread(cmd=paste(zcat_cmd, file))
 		} else {
 			dt[[chr]] <- fread(file)
 		}
@@ -418,11 +442,107 @@ read_and_create_variant_manhattan <- function(
 	gc()
 }
 
+create_brava_single_qq_and_manhattan <- function(
+	pheno, pop, sex,
+	outdir="plots", indir="data", save=FALSE,
+	wait_for_completion=TRUE, gene_mapping="data/gene_mapping.txt.gz",
+	include_by_chr=FALSE, overwrite=FALSE)
+{
+	# Determine the files for the requested phenotype
+	outdir <- ifelse(grepl("\\/$", outdir), gsub("\\/.*$", "\\/", outdir), paste0(outdir, "/"))
+	indir <- ifelse(grepl("\\/$", indir), gsub("\\/.*$", "\\/", indir), paste0(indir, "/"))
+	p <- pheno
+	s <- sex
+	if (!(sex %in% c("XX", "XY", "both_sexes"))) {
+		stop("Error: sex must be one of 'XX', 'XY' or 'both_sexes'")
+	}
+	gene_files <- dir(paste0(indir, "/gene"))
+	variant_files <- dir(paste0(indir, "/variant"))
+	# Regular expression to determine the files
+	dt_results <- data.table(
+		output_file=gene_files,
+		chromosome=gsub("^(chr[0-9X]+)_.*", "\\1", gene_files),
+		population=gsub(".*_([A-Z]{3}).*.txt.gz", "\\1", gene_files),
+		sex=ifelse(grepl("F.txt", gene_files), "XX",
+			ifelse(grepl("M.txt", gene_files), "XY", "both_sexes")),
+		group_test=ifelse(grepl("singleAssoc", gene_files), FALSE, TRUE),
+		phenotype=gsub(paste0("^chr[0-9X]+_(.*)_[A-Z]{3}_?F?M?.txt.*"), "\\1", gene_files)
+	)
+
+	dt_results <- dt_results %>% filter(phenotype == p, population == pop, sex == s)
+
+	# Determine if the phenotype, pop pair has all the required data for plotting
+	# Filter down to the required phenotype, pop pair
+	if (all(paste0("chr", c(seq(1,22), "X")) %in% unique(dt_results$chromosome)))
+	{
+		cat(paste0("All chromosomes present for phenotype...\n",
+		p, ", population: ", pop, ", sex: ", s, "\n"))
+
+		# Remove whitespace in the phenotype naming
+		p_trim <- gsub("_$", "", str_trim(gsub("[[:space:]_]+", "\\_", p)))
+		# Run gene level plotting
+		if (overwrite | !file.exists(
+			paste0(outdir, "gene/", p_trim, "_gene_", pop,
+				ifelse(s=="both_sexes", "",
+				ifelse(s=="XX", "_F", "_M")), "_qq.pdf"))) {
+			cat("Creating gene-level QQ plots\n\n")
+			read_and_create_qq_gene(
+				phenotype=p_trim, outdir=paste0(outdir, "gene"), indir=paste0(indir, "gene"),
+				input_regexp=paste0("chr[0-9X]+_", p, "_", pop, ifelse(s=="both_sexes", "", ifelse(s=="XX", "_F", "_M")), ".txt"),
+				pop, s, save=save)
+			# Run gene level Manhattan plot
+			cat("Creating gene-level Manhattan plots\n\n")
+			read_and_create_gene_manhattan(
+				phenotype=p_trim, outdir=paste0(outdir, "gene"), indir=paste0(indir, "gene"),
+				input_regexp=paste0("chr[0-9X]+_", p, "_", pop, ifelse(s=="both_sexes", "", ifelse(s=="XX", "_F", "_M")), ".txt"),
+				pop, s, save=save,
+				gene_mapping=gene_mapping, threshold=4, significance_T=0.05/20000)
+		} else {
+			cat("Gene based plots already present!\n")
+		}
+		# Run variant level plotting
+		cat("Creating variant-level QQ plots\n")
+		if (overwrite | !file.exists(
+		paste0(outdir, "variant/", p_trim, "_variant_", pop,
+				ifelse(s=="both_sexes", "",
+				ifelse(s=="XX", "_F", "_M")), "_qq.pdf"))) {
+		read_and_create_qq_variant(
+			phenotype=p_trim, outdir=paste0(outdir, "variant"), indir=paste0(indir, "variant"),
+			input_regexp=paste0("chr[0-9X]+_", p, "_", pop, ifelse(s=="both_sexes", "", ifelse(s=="XX", "_F", "_M")), ".txt"),
+			pop, s, save=save)
+		if (include_by_chr) {
+			# Run gene level plotting split by chr
+			cat("Creating gene-level QQ plots, split by chromosome\n\n")
+			read_and_create_qq_gene(
+				phenotype=p_trim, outdir=paste0(outdir, "gene"), indir=paste0(indir, "gene"),
+				input_regexp=paste0("chr[0-9X]+_", p, "_", pop, ifelse(s=="both_sexes", "", ifelse(s=="XX", "_F", "_M")), ".txt"),
+				pop, s, save=save, by_chr=TRUE)
+			read_and_create_qq_variant(
+				phenotype=p_trim, outdir=paste0(outdir, "variant"), indir=paste0(indir, "variant"),
+				input_regexp=paste0("chr[0-9X]+_", p, "_", pop, ifelse(s=="both_sexes", "", ifelse(s=="XX", "_F", "_M")), ".txt"),
+				pop, s, save=save, by_chr=TRUE)
+		} 
+		# Run variant level Manhattan plot
+		cat("Creating variant-level Manhattan plots\n")
+		read_and_create_variant_manhattan(
+			phenotype=p_trim, outdir=paste0(outdir, "variant"), indir=paste0(indir, "variant"),
+			input_regexp=paste0("chr[0-9X]+_", p, "_", pop, ifelse(s=="both_sexes", "", ifelse(s=="XX", "_F", "_M")), ".txt"),
+			pop, s, save=save, significance_T=0.05/1e6
+			)
+		} else {
+			cat("Variant based plots already present!\n")
+		}
+	} else {
+		cat(paste0("Not all chromosomes present for phenotype...\n",
+		p, ", population: ", pop, "\n"))
+		cat(paste(paste(setdiff(paste0("chr", c(seq(1,22), "X")), unique(dt_results$chromosome)), collapse=", "), "are missing\n")) 
+	}
+}
 
 create_brava_qq_and_manhattan <- function(
 	outdir="plots", indir="data", save=FALSE,
 	wait_for_completion=TRUE, gene_mapping="data/gene_mapping.txt.gz",
-	include_by_chr=FALSE, overwrite=FALSE,
+	include_by_chr=FALSE, overwrite=FALSE, download_only=FALSE,
 	RAP_outputs_folder="brava/outputs/step2/sept2023")
 {
 	# Determine the available phenotypes
@@ -485,59 +605,61 @@ create_brava_qq_and_manhattan <- function(
 						}
 					}
 
-					# Remove whitespace in the phenotype naming
-					p_trim <- gsub("_$", "", str_trim(gsub("[[:space:]_]+", "\\_", p)))
-					# Run gene level plotting
-					if (overwrite | !file.exists(
-						paste0(outdir, "gene/", p_trim, "_gene_", pop,
-							ifelse(s=="both_sexes", "",
-								ifelse(s=="XX", "_F", "_M")), "_qq.pdf"))) {
-						cat("Creating gene-level QQ plots\n\n")
-						read_and_create_qq_gene(
-							phenotype=p_trim, outdir=paste0(outdir, "gene"), indir=paste0(indir, "gene"),
-							input_regexp=paste0("chr[0-9X]+_", p, "_", pop, ifelse(s=="both_sexes", "", ifelse(s=="XX", "_F", "_M")), ".txt"),
-							pop, s, save=save)
-						# Run gene level Manhattan plot
-						cat("Creating gene-level Manhattan plots\n\n")
-						read_and_create_gene_manhattan(
-							phenotype=p_trim, outdir=paste0(outdir, "gene"), indir=paste0(indir, "gene"),
-							input_regexp=paste0("chr[0-9X]+_", p, "_", pop, ifelse(s=="both_sexes", "", ifelse(s=="XX", "_F", "_M")), ".txt"),
-							pop, s, save=save,
-							gene_mapping=gene_mapping, threshold=4, significance_T=0.05/20000)
-					} else {
-						cat("Gene based plots already present!\n")
-					}
-					# Run variant level plotting
-					cat("Creating variant-level QQ plots\n")
-					if (overwrite | !file.exists(
-					paste0(outdir, "variant/", p_trim, "_variant_", pop,
-							ifelse(s=="both_sexes", "",
-								ifelse(s=="XX", "_F", "_M")), "_qq.pdf"))) {
-					read_and_create_qq_variant(
-						phenotype=p_trim, outdir=paste0(outdir, "variant"), indir=paste0(indir, "variant"),
-						input_regexp=paste0("chr[0-9X]+_", p, "_", pop, ifelse(s=="both_sexes", "", ifelse(s=="XX", "_F", "_M")), ".txt"),
-						pop, s, save=save)
-					if (include_by_chr) {
-						# Run gene level plotting split by chr
-						cat("Creating gene-level QQ plots, split by chromosome\n\n")
-						read_and_create_qq_gene(
-							phenotype=p_trim, outdir=paste0(outdir, "gene"), indir=paste0(indir, "gene"),
-							input_regexp=paste0("chr[0-9X]+_", p, "_", pop, ifelse(s=="both_sexes", "", ifelse(s=="XX", "_F", "_M")), ".txt"),
-							pop, s, save=save, by_chr=TRUE)
+					if (!download_only) {
+						# Remove whitespace in the phenotype naming
+						p_trim <- gsub("_$", "", str_trim(gsub("[[:space:]_]+", "\\_", p)))
+						# Run gene level plotting
+						if (overwrite | !file.exists(
+							paste0(outdir, "gene/", p_trim, "_gene_", pop,
+								ifelse(s=="both_sexes", "",
+									ifelse(s=="XX", "_F", "_M")), "_qq.pdf"))) {
+							cat("Creating gene-level QQ plots\n\n")
+							read_and_create_qq_gene(
+								phenotype=p_trim, outdir=paste0(outdir, "gene"), indir=paste0(indir, "gene"),
+								input_regexp=paste0("chr[0-9X]+_", p, "_", pop, ifelse(s=="both_sexes", "", ifelse(s=="XX", "_F", "_M")), ".txt"),
+								pop, s, save=save)
+							# Run gene level Manhattan plot
+							cat("Creating gene-level Manhattan plots\n\n")
+							read_and_create_gene_manhattan(
+								phenotype=p_trim, outdir=paste0(outdir, "gene"), indir=paste0(indir, "gene"),
+								input_regexp=paste0("chr[0-9X]+_", p, "_", pop, ifelse(s=="both_sexes", "", ifelse(s=="XX", "_F", "_M")), ".txt"),
+								pop, s, save=save,
+								gene_mapping=gene_mapping, threshold=4, significance_T=0.05/20000)
+						} else {
+							cat("Gene based plots already present!\n")
+						}
+						# Run variant level plotting
+						cat("Creating variant-level QQ plots\n")
+						if (overwrite | !file.exists(
+						paste0(outdir, "variant/", p_trim, "_variant_", pop,
+								ifelse(s=="both_sexes", "",
+									ifelse(s=="XX", "_F", "_M")), "_qq.pdf"))) {
 						read_and_create_qq_variant(
 							phenotype=p_trim, outdir=paste0(outdir, "variant"), indir=paste0(indir, "variant"),
 							input_regexp=paste0("chr[0-9X]+_", p, "_", pop, ifelse(s=="both_sexes", "", ifelse(s=="XX", "_F", "_M")), ".txt"),
-							pop, s, save=save, by_chr=TRUE)
-					} 
-					# Run variant level Manhattan plot
-					cat("Creating variant-level Manhattan plots\n")
-					read_and_create_variant_manhattan(
-						phenotype=p_trim, outdir=paste0(outdir, "variant"), indir=paste0(indir, "variant"),
-						input_regexp=paste0("chr[0-9X]+_", p, "_", pop, ifelse(s=="both_sexes", "", ifelse(s=="XX", "_F", "_M")), ".txt"),
-						pop, s, save=save, significance_T=0.05/1e6
-						)
-					} else {
-						cat("Variant based plots already present!\n")
+							pop, s, save=save)
+						if (include_by_chr) {
+							# Run gene level plotting split by chr
+							cat("Creating gene-level QQ plots, split by chromosome\n\n")
+							read_and_create_qq_gene(
+								phenotype=p_trim, outdir=paste0(outdir, "gene"), indir=paste0(indir, "gene"),
+								input_regexp=paste0("chr[0-9X]+_", p, "_", pop, ifelse(s=="both_sexes", "", ifelse(s=="XX", "_F", "_M")), ".txt"),
+								pop, s, save=save, by_chr=TRUE)
+							read_and_create_qq_variant(
+								phenotype=p_trim, outdir=paste0(outdir, "variant"), indir=paste0(indir, "variant"),
+								input_regexp=paste0("chr[0-9X]+_", p, "_", pop, ifelse(s=="both_sexes", "", ifelse(s=="XX", "_F", "_M")), ".txt"),
+								pop, s, save=save, by_chr=TRUE)
+						} 
+						# Run variant level Manhattan plot
+						cat("Creating variant-level Manhattan plots\n")
+						read_and_create_variant_manhattan(
+							phenotype=p_trim, outdir=paste0(outdir, "variant"), indir=paste0(indir, "variant"),
+							input_regexp=paste0("chr[0-9X]+_", p, "_", pop, ifelse(s=="both_sexes", "", ifelse(s=="XX", "_F", "_M")), ".txt"),
+							pop, s, save=save, significance_T=0.05/1e6
+							)
+						} else {
+							cat("Variant based plots already present!\n")
+						}
 					}
 				} else {
 					cat(paste0("Not all chromosomes present for phenotype...\n",
@@ -559,7 +681,3 @@ create_brava_qq_and_manhattan <- function(
 	}
 }
 
-create_brava_qq_and_manhattan(save=TRUE, wait_for_completion=FALSE)
-
-# Which traits are missing?
-# Run traits that are missing

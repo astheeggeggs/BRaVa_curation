@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Load R module
 module load R
@@ -52,7 +52,7 @@ do
       # Submit sbatch, passing name as a parameter
       sbatch \
       --job-name=$phenotype \
-      --o="$phenotype.out" \
+      -o="$phenotype.out" \
       Rscript run_qq_and_manhattan.r \
       --phenotype=$phenotype \
       --population=$pop \

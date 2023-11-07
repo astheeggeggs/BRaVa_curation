@@ -13,7 +13,7 @@ print(paste("Population:", args$population))
 print(paste("Sex:", args$sex))
 
 source("qq_and_manhattan.r")
-# create_brava_qq_and_manhattan(save=TRUE, wait_for_completion=FALSE, download_only=TRUE)
+# create_brava_qq_and_manhattan( save=TRUE, wait_for_completion=FALSE, download_only=TRUE)
 create_brava_single_qq_and_manhattan(
 	pheno=args$phenotype, pop=args$population, sex=args$sex, save=TRUE
 	)

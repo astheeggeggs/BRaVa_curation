@@ -69,7 +69,7 @@ for phenotype in "${phenotypes[@]}"
 do
    for pop in "${pops[@]}"
    do
-		sbatch --export=pheno=bam run_qq_and_manhattan.sh
+		sbatch --export=pheno=bam qq_and_manhattan_template.sh
    done
 done
 

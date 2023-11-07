@@ -1,8 +1,3 @@
-#!/bin/bash
-
-# Load R module
-module load R
-
 # phenotypes=("Age_related_macular_degeneration"
 #    "Alanine_transaminase"
 #    "Alcohol_consumption_drinks_per_week"
@@ -45,20 +40,6 @@ module load R
 phenotypes=("Age_related_macular_degeneration")
 pops=("AFR" "AMR" "EAS" "EUR" "SAS")
 
-for phenotype in "${phenotypes[@]}"
-do
-   for pop in "${pops[@]}"
-   do
-      # Submit sbatch, passing name as a parameter
-      sbatch \
-      --job-name=$phenotype \
-      --o="$phenotype.out" \
-      Rscript run_qq_and_manhattan.r \
-      --phenotype=$phenotype \
-      --population=$pop \
-      --sex="both_sexes"
-   done
-done
 
 # phenotypes=("Benign_and_in_situ_cervical_and_uterine_neoplasms"
 #    "Breast_cancer"
@@ -84,9 +65,11 @@ done
 
 
 
-
-
-
-
-
+for phenotype in "${phenotypes[@]}"
+do
+   for pop in "${pops[@]}"
+   do
+		sbatch --export=pheno=bam run_qq_and_manhattan.sh
+   done
+done
 

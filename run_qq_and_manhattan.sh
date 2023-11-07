@@ -1,3 +1,11 @@
+#!/bin/sh
+
+# Load R module
+module load R
+
+phenotypes=("Age_related_macular_degeneration")
+pops=("AFR" "AMR" "EAS" "EUR" "SAS")
+
 # phenotypes=("Age_related_macular_degeneration"
 #    "Alanine_transaminase"
 #    "Alcohol_consumption_drinks_per_week"
@@ -37,9 +45,13 @@
 #    "Venous_Thromboembolism"
 #    "WHR_adjusted_for_BMI")
 
-phenotypes=("Age_related_macular_degeneration")
-pops=("AFR" "AMR" "EAS" "EUR" "SAS")
-
+for phenotype in "${phenotypes[@]}"
+do
+	for pop in "${pops[@]}"
+	do
+		sbatch --export=pheno=$phenotype,pop=$pop,sex=both_sexes qq_and_manhattan_template.sh
+	done
+done
 
 # phenotypes=("Benign_and_in_situ_cervical_and_uterine_neoplasms"
 #    "Breast_cancer"
@@ -62,14 +74,4 @@ pops=("AFR" "AMR" "EAS" "EUR" "SAS")
 #       --sex "XX"
 #    done
 # done
-
-
-
-for phenotype in "${phenotypes[@]}"
-do
-   for pop in "${pops[@]}"
-   do
-		sbatch --export=pheno=bam qq_and_manhattan_template.sh
-   done
-done
 

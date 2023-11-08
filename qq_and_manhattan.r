@@ -161,6 +161,69 @@ read_and_create_qq_gene <- function(
 	gc()
 }
 
+combine_split_files <- function(regexp, output_file)
+{
+	split_files <- system(paste0("ls ", regexp, "*"), intern=TRUE)
+	if (any(grepl("singleAssoc", split_files))) {
+		output_file <- paste0(output_file, ".singleAssoc.txt")
+	}
+	system(paste0("gunzip -c ", split_files[1], "> ", output_file))
+	split_files <- split_files[-1]
+	for (file in split_files) {
+		system(paste0("gunzip -c ", file, " | tail -n +2 >>", output_file))
+	}
+	cat(paste0(output_file, "\n"))
+	system(paste("gzip", output_file))
+}
+
+combine_split_uploaded_files <- function(phenotype, pop, sex, chr="1")
+{
+	if (sex == "both_sexes") {
+		regexp <- paste0("chr", chr, "_split_*_", phenotype, "_", pop)
+		combine_split_files(regexp, output_file=paste0("chr", chr, "_", phenotype, "_", pop, ".txt"))
+	} else {
+		regexp <- paste0("chr", chr, "_split_*_", phenotype, "_", pop, "_", sex)
+		combine_split_files(regexp, output_file=paste0("chr", chr, "_", phenotype, "_", pop, "_", sex, ".txt"))
+	}
+}
+
+combine_all_split_files <- function(
+	gene_folder="/gpfs3/well/lindgren/dpalmer/BRaVa_curation/data/gene/",
+	variant_folder="/gpfs3/well/lindgren/dpalmer/BRaVa_curation/data/variant/")
+{
+	setwd(gene_folder)
+	for_split_extraction <- unique(gsub("^chr[0-9]+_split_[0-9]+_(.*).txt.gz", "\\1", grep("split", dir(), value=TRUE)))
+	dt <- data.table(
+		phenotypes=gsub("_[A-Z]+_?[F,M]?$", "", for_split_extraction),
+		population=gsub(".*_([A-Z]{3})_?[F,M]?$", "\\1", for_split_extraction),
+		sex=ifelse(grepl("_[F,M]?$", for_split_extraction),
+			ifelse(grepl("_F$", for_split_extraction), "F", "M"),
+			"both_sexes")
+	)
+	if (nrow(dt) > 0) {
+		for (i in 1:nrow(dt)) {
+			combine_split_uploaded_files(
+				dt$phenotypes[i], dt$population[i], dt$sex[i])
+		}
+	}
+	
+	setwd(variant_folder)
+	for_split_extraction <- unique(gsub("^chr[0-9]+_split_[0-9]+_(.*).txt.singleAssoc.txt.gz", "\\1", grep("split", dir(), value=TRUE)))
+	dt <- data.table(
+		phenotypes=gsub("_[A-Z]+_?[F,M]?$", "", for_split_extraction),
+		population=gsub(".*_([A-Z]{3})_?[F,M]?$", "\\1", for_split_extraction),
+		sex=ifelse(grepl("_[F,M]?$", for_split_extraction),
+			ifelse(grepl("_F$", for_split_extraction), "F", "M"),
+			"both_sexes")
+	)
+	if (nrow(dt) > 0) {
+		for (i in 1:nrow(dt)) {
+			combine_split_uploaded_files(
+				dt$phenotypes[i], dt$population[i], dt$sex[i])
+		}
+	}
+}
+
 read_and_create_qq_variant <- function(
 	phenotype, outdir, indir, input_regexp, population, sex,
 	save=TRUE, split_by_MAF=FALSE, by_chr=FALSE

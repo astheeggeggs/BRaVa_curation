@@ -65,7 +65,8 @@ main <- function(args)
         )
     }
 
-    create_MAC_and_MAF_summary <- function(dt, annotation_group, fout)
+    create_MAC_and_MAF_summary <- function(
+        dt, annotation_group, fout, spliceAI_bins=TRUE)
     {
         annotation_group <- enquo(annotation_group)
 
@@ -77,13 +78,25 @@ main <- function(args)
             mutate(bin_type="MAF")
         dt_summary_MAC <- dt_summary_MAC %>% rename(bin=MAC_bin) %>% 
             mutate(bin_type="MAC")
+
         dt_summary_MAF <- data.table(dt_summary_MAF)
         dt_summary_MAC <- data.table(dt_summary_MAC)
         dt_summary <- merge(dt_summary_MAF, dt_summary_MAC, all=TRUE)
+
+        if (spliceAI_bins) {
+            dt_summary_spliceAI <- dt %>%
+                group_by(!!annotation_group, spliceAI_bin) %>% 
+                summarise(average_AC = sum(MAC), variant_count = n())
+            dt_summary_spliceAI <- dt_summary_spliceAI %>%
+            rename(bin=spliceAI_bin) %>% mutate(bin_type="spliceAI")
+            dt_summary <- merge(dt_summary, dt_summary_spliceAI, all=TRUE)
+        }
+
         dt_summary <- dt_summary %>% 
             mutate(average_count = average_AC/n_samples)
 
         fwrite(dt_summary, file=fout, sep="\t", quote=FALSE)
+        cat("created summary split by annotation\n")
         return(dt_summary)
     }
 
@@ -116,29 +129,38 @@ main <- function(args)
     dt_AC[, MAC_bin := cut(
         MAC,
         breaks=c(0, 1, 5, 10, 100, 1000, 10000, Inf),
-        labels=c("singletons", "(1,5]", "(5, 10]", "(10, 100]", "(100, 1,000]",
-            "(1,000, 10,000]", "> 10,000"))]
+        labels=c("singletons", "(1,5]", "(5,10]", "(10,100]", "(100,1,000]",
+            "(1,000,10,000]", ">10,000"))]
+    cols <- c("SNP_ID","MAC", "MAF_bin", "MAC_bin")
     dt_variant_gene_AC <- merge(dt_AC, dt_brava_annot)
+
+    if (args$spliceAI_bins) {
+        dt_variant_gene_AC[, spliceAI_bin := cut(
+            max_DS,
+            breaks=c(0, 0.2, 0.5, 0.8, Inf),
+            labels=c("<0.2", "[0.2,0.5)", "[0.5,0.8)", ">0.8"))]
+        cols <- c("SNP_ID","MAC", "MAF_bin", "MAC_bin", "spliceAI_bin")
+    }
     
     # Transcript level
     # Include variants multiple times where they appear on different transcripts
     dt_summary <- create_MAC_and_MAF_summary(
         dt_variant_gene_AC, annotation,
-        paste0(args$out, ".BRaVa_annotations_transcript_summary.tsv.gz"))
+        paste0(args$out, ".BRaVa_annotations_transcript_summary.tsv.gz"),
+        spliceAI_bins=args$spliceAI_bins)
 
     dt_variant_AC <- dt_variant_gene_AC %>% group_by(SNP_ID) %>% 
         summarise(annotation = most_deleterious(annotation))
     dt_variant_AC <- data.table(dt_variant_AC, key="SNP_ID")
-    dt_variant_AC <- merge(
-        dt_variant_AC,
-        unique(dt_variant_gene_AC %>% 
-            select(c("SNP_ID","MAC", "MAF_bin", "MAC_bin"))))
+    dt_variant_AC <- merge(dt_variant_AC,
+        unique(dt_variant_gene_AC %>% select(all_of(cols))))
     
     # Variant level
     # Just include the most deleterious annotation for a variant
     create_MAC_and_MAF_summary(
         dt_variant_AC, annotation,
-        paste0(args$out, ".BRaVa_annotations_variant_summary.tsv.gz"))
+        paste0(args$out, ".BRaVa_annotations_variant_summary.tsv.gz"),
+        spliceAI_bins=args$spliceAI_bins)
 
     names_parse <- grep("&", names(table(dt_variant_gene_AC$CSQ)), value=TRUE)
     mapping <- list()
@@ -161,16 +183,15 @@ main <- function(args)
     # include variants multiple times where they appear on different transcripts
     create_MAC_and_MAF_summary(
         dt_variant_gene_AC, CSQs,
-        paste0(args$out, ".vep_annotations_transcript_summary.tsv.gz"))
+        paste0(args$out, ".vep_annotations_transcript_summary.tsv.gz"),
+        spliceAI_bins=args$spliceAI_bins)
 
     # Take the result and restrict to a single annotation per variant
     dt_variant_AC <- dt_variant_gene_AC %>% group_by(SNP_ID) %>% 
         summarise(CSQ = most_deleterious_vep(CSQs))
     dt_variant_AC <- data.table(dt_variant_AC, key="SNP_ID")
-    dt_variant_AC <- merge(
-        dt_variant_AC,
-        unique(dt_variant_gene_AC %>% 
-            select(c("SNP_ID","MAC", "MAF_bin", "MAC_bin"))))
+    dt_variant_AC <- merge(dt_variant_AC,
+        unique(dt_variant_gene_AC %>% select(all_of(cols))))
     dt_variant_AC[, CSQs := ifelse(
         grepl("&", CSQ), sample(strsplit(CSQ, split="&")[[1]], 1), CSQ)]
 
@@ -178,7 +199,8 @@ main <- function(args)
     # just include the most deleterious annotation for a variant
     dt_summary <- create_MAC_and_MAF_summary(
         dt_variant_AC, CSQs,
-        paste0(args$out, ".vep_annotations_variant_summary.tsv.gz"))
+        paste0(args$out, ".vep_annotations_variant_summary.tsv.gz"),
+        spliceAI_bins=args$spliceAI_bins)
 }
 
 # Add arguments
@@ -190,6 +212,7 @@ parser$add_argument("--vep_spliceAI_processed", default=NULL, required=TRUE,
         "included. This is the 'long' output of brava_create_annot.py"))
 parser$add_argument("--out", default=NULL, required=TRUE,
     help="Output filepath")
+parser$add_argument("--spliceAI_bins", default=FALSE, action="store_true")
 args <- parser$parse_args()
 
 main(args)

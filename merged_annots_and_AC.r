@@ -123,7 +123,7 @@ main <- function(args)
     dt_AC[, MAF_bin := cut(
         MAF,
         breaks=c(0, 0.001, 0.01, 0.05, 0.5, 1),
-        labels=c("<0.01%", "0.01-0.1%", "1-5%", ">5%", ">50%"),
+        labels=c("<0.1%", "0.1-1%", "1-5%", ">5%", ">50%"),
         include.lowest=TRUE)
     ]
     dt_AC[, MAC_bin := cut(

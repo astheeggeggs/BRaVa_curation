@@ -39,7 +39,7 @@ We've also included a plotting function `03_count_plotting.r` to visualise the d
 
 Note that this function assumes that the summary files created in *Step 2* named in the following way:
 
-`{biobank}.{pop}.chr{chr}.BRaVa_annotations_{variant, transcript}_summary.tsv.gz"` and placed in a folder (named `${count_dir}`, say).
+`{biobank}.{pop}.chr{chr}.BRaVa_annotations_{variant, transcript}_summary.tsv.gz"` and placed in a folder (named `{count_dir}`, say).
 
 To generate a `.pdf` of plots, run:
 

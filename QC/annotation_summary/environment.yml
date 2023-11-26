@@ -1,0 +1,13 @@
+name: annot_counts
+dependencies:
+- r-essentials=4.2
+- r-dplyr=1.1.2
+- r-argparse=2.2.2
+- r-data.table=1.14.8
+- r-r.utils=2.12.2
+
+# $ conda config --get channels
+# --add channels 'r'   # lowest priority
+# --add channels 'defaults'
+# --add channels 'conda-forge'   # highest priority
+# $ conda install -c conda-forge r-base

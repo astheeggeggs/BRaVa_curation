@@ -1,4 +1,4 @@
-# Set of scripts to generate summary counts and plots
+# Set of scripts to generate annotation summary counts and plots
 
 Before starting, create the conda environment to run the R scripts in steps 2 and 3.
 

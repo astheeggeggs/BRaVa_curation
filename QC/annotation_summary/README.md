@@ -28,7 +28,8 @@ This script reads in the output of *Step 1* and *Step 2a* to generate four summa
 Rscript 02_merged_annots_and_AC.r --AC_path ${step_1_output.frqx.gz} --vep_spliceAI_processed ${step_2a_output.long.csv.gz} --out ${out}
 ```
 It's likely that you will generate separate summary files for each chromosome and for each population label. See [`02_get_merged_annots_and_AC.sh`](https://github.com/astheeggeggs/BRaVa_curation/blob/main/QC/annotation_summary/02_get_merged_annots_and_AC.sh) for an example using the DNANexus RAP.
-These files should be uploaded to your biobank/cohort specific bucket.
+These files should be uploaded to your biobank/cohort specific bucket. We recommend naming the files with the following naming convention so that *Step 3* plotting can be easily carried out:
+```out={biobank}.{pop}.chr{chr}```
 
 ## Step 3 (optional): Plot the AC and variant counts, split by MAF, MAC and spliceAI bin
 We've also included a plotting function `03_count_plotting.r` to visualise the data across chromosomes.

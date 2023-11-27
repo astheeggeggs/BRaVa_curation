@@ -151,7 +151,8 @@ main <- function(args)
     dt_AC[, check := `C(HOM A1)` + `C(HOM A2)` + `C(HET)` + `C(MISSING)`]
     dt_AC <- dt_AC[MAC > 0]
     n_samples <- dt_AC$check[1]
-    dt_AC[, MAF := MAC/(2*n_samples)]
+    # dt_AC[, MAF := MAC/(2*n_samples)]
+    dt_AC[, MAF := MAC/(AC_A1 + AC_A2)]
     dt_AC[, MAF_bin := cut(
         MAF,
         breaks=c(0, 0.001, 0.01, 0.05, 0.5, 1),

@@ -25,7 +25,7 @@ Example shell scripts looping over chromosomes are [here](https://github.com/BRa
 This script reads in the output of *Step 1* and *Step 2a* to generate four summary files for each call to the script.
 
 ```
-Rscript 02_merged_annots_and_AC.r --AC_path ${step_1_output.frqx.gz} --vep_spliceAI_processed ${step_2a_output.long.csv.gz} --out ${out}
+Rscript 02_merged_annots_and_AC.r --AC_path ${step_1_output.frqx.gz} --vep_spliceAI_processed ${step_2a_output.long.csv.gz} --spliceAI_bins --out ${out}
 ```
 It's likely that you will generate separate summary files for each chromosome and for each population label. See [`02_get_merged_annots_and_AC.sh`](https://github.com/astheeggeggs/BRaVa_curation/blob/main/QC/annotation_summary/02_get_merged_annots_and_AC.sh) for an example using the DNANexus RAP.
 These files should be uploaded to your biobank/cohort specific bucket. We recommend naming the files with the following naming convention so that *Step 3* plotting can be easily carried out:

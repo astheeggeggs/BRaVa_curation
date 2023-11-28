@@ -136,9 +136,9 @@ main <- function(args)
 
     # Check to ensure that all SNP_IDs are off the form CHR:POS:REF:ALT
     AC_correct_format <- all(
-        grepl("[1-9]+:[0-9]+:[A,C,G,T]+:[A,C,G,T]+", dt_AC$SNP_ID))
+        grepl("[1-9,X]+:[0-9]+:[A,C,G,T]+:[A,C,G,T]+", dt_AC$SNP_ID))
     brava_annot_correct_format <- all(
-        grepl("[1-9]+:[0-9]+:[A,C,G,T]+:[A,C,G,T]+", dt_brava_annot$SNP_ID)
+        grepl("[1-9,X]+:[0-9]+:[A,C,G,T]+:[A,C,G,T]+", dt_brava_annot$SNP_ID)
         )
     if (!AC_correct_format | !brava_annot_correct_format) {
         stop(paste("One or both SNP/SNP_ID columns in", AC_path,

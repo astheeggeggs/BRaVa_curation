@@ -101,13 +101,20 @@ main <- function(args) {
 	biobank <- args$biobank
 	count_dir <- args$count_directory
 	out <- args$out
+	pops <- c("EAS", "AMR", "AFR", "EUR", "SAS")
+	if (!is.null(args$super_population)) {
+		if (!((args$super_population) %in% pops)) {
+			stop("Error: super population specified is not one of EAS, AMR, AFR, EUR, or SAS.")
+		}
+		pops <- args$super_population
+	}
 	# BRaVa annotations
 	out_variant_AC <- paste0(gsub(".pdf$", "", out), ".variants_AC_bins.pdf")
 	pdf(file=out_variant_AC, width=10, height=6)
 	for (annotation_level in c("variant", "transcript")) {
 		dt_list <- list()
 		for (type in c("MAF", "MAC")) {
-			for (pop in c("EAS", "AMR", "AFR", "EUR", "SAS")) {
+			for (pop in pops) {
 				dt_tmp <- extract_overall_counts(
 					paste0(biobank, ".", pop, ".chr@.BRaVa_annotations_", annotation_level, "_summary.tsv.gz"),
 					count_directory=count_dir,
@@ -162,7 +169,7 @@ main <- function(args) {
 	for (annotation_level in c("variant", "transcript"))
 	{
 		dt_list <- list()
-		for (pop in c("EAS", "AMR", "AFR", "EUR", "SAS")) {
+		for (pop in pops) {
 			dt_tmp <- dt_list[[type]][[pop]] <- extract_overall_counts(
 				paste0(biobank, ".", pop, ".chr@.BRaVa_annotations_", annotation_level, "_summary.tsv.gz"),
 				count_directory=count_dir,
@@ -220,6 +227,7 @@ parser$add_argument("--biobank", default=NULL, required=TRUE,
 parser$add_argument("--out", default=NULL, required=TRUE,
     help="Output filepath for pdf file of plots")
 parser$add_argument("--spliceAI_bins", default=FALSE, action="store_true")
+parser$add_argument("--super_population", default=NULL, required=FALSE)
 args <- parser$parse_args()
 
 main(args)

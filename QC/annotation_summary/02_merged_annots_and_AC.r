@@ -136,13 +136,14 @@ main <- function(args)
 
     # Check to ensure that all SNP_IDs are off the form CHR:POS:REF:ALT
     AC_correct_format <- all(
-        grepl("[1-9]+:[0-9]+:[A,C,G,T]+:[A,C,G,T]+", dt_AC$SNP_ID))
+        grepl("^[1-9,X]{1}[0-9]*:[0-9]+:[A,C,G,T]+:[A,C,G,T]+", dt_AC$SNP_ID))
     brava_annot_correct_format <- all(
-        grepl("[1-9]+:[0-9]+:[A,C,G,T]+:[A,C,G,T]+", dt_brava_annot$SNP_ID)
+        grepl("^[1-9,X]{1}[0-9]*:[0-9]+:[A,C,G,T]+:[A,C,G,T]+", dt_brava_annot$SNP_ID)
         )
     if (!AC_correct_format | !brava_annot_correct_format) {
         stop(paste("One or both SNP/SNP_ID columns in", AC_path,
-            "and", vep_spliceAI_path, "is not formatted to CHR:POS:REF:ALT"))
+            "and", vep_spliceAI_path, "is not formatted to CHR:POS:REF:ALT.",
+            " Note that chrs 1-9 cannot be labelled 01, 02, etc"))
     }
 
     dt_AC[, AC_A1 := 2*`C(HOM A1)` + `C(HET)`]
@@ -151,7 +152,8 @@ main <- function(args)
     dt_AC[, check := `C(HOM A1)` + `C(HOM A2)` + `C(HET)` + `C(MISSING)`]
     dt_AC <- dt_AC[MAC > 0]
     n_samples <- dt_AC$check[1]
-    dt_AC[, MAF := MAC/(2*n_samples)]
+    # dt_AC[, MAF := MAC/(2*n_samples)]
+    dt_AC[, MAF := MAC/(AC_A1 + AC_A2)]
     dt_AC[, MAF_bin := cut(
         MAF,
         breaks=c(0, 0.001, 0.01, 0.05, 0.5, 1),

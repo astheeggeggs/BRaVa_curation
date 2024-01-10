@@ -18,14 +18,32 @@ Note that the following scripts require the `.frqx` [output format](https://www.
 (CHR, SNP, A1, A2, C(HOM A1), C(HET), C(HOM A2), C(HAP A1), C(HAP A2), C(MISSING)).
 
 ## Step 2a: Generate the BRaVa annotations
-This will likely already have been carried out. The output files are generated in [Step 3 of the variant-annotation repo](https://github.com/BRaVa-genetics/variant-annotation#3-run-the-python-brava-annotation-script-to-extract-variant-annotations). This python script will create two output files, one for input into SAIGE, and another named `${out}.long.csv.gz`.
+The files required are generated in Steps 1 and 2 of the [variant-annotation repo](https://github.com/BRaVa-genetics/variant-annotation). 
+
+First, using files `sites_only_output_chr${chr}_vep.processed.txt` (from [step 1 of variant-annnotiotion repo](https://github.com/BRaVa-genetics/variant-annotation#1-run-vep-version-105-with-loftee-v104_grch38)) and your spliceAI annotated sites only VCF from [step 2 of the variant-annotation repo](https://github.com/BRaVa-genetics/variant-annotation#2-run-spliceai) (Note - both of these files should *not* have had the popmax 1% gnomAD filter applied). 
+
+If you don't have `sites_only_output_chr${chr}_vep.processed.txt` files, run
+```
+bcftools +split-vep out/sites_only_output_chr${chr}_vep.vcf.gz -d -f '%CHROM:%POS:%REF:%ALT %Gene %LoF %REVEL_score %CADD_phred %Consequence %Feature %MANE_SELECT %CANONICAL %BIOTYPE\n' -o out/sites_only_output_chr${chr}_vep.processed.txt
+sed -i '1i SNP_ID GENE LOF REVEL_SCORE CADD_PHRED CSQ TRANSCRIPT MANE_SELECT CANONICAL BIOTYPE' out/sites_only_output_chr${chr}_vep.processed.txt
+```
+to create them.
+
+Next, run the [BRaVa annotation script](https://github.com/BRaVa-genetics/variant-annotation/blob/main/SAIGE_annotations/scripts/brava_create_annot.py) to extract variant annotations for these files:
+
+```
+brava_create_annot.py -v vep_table -s spliceai_vcf -w output_file
+rm output_file
+```
+
+This python script will create two output files, one for input into SAIGE (which we delete as this set retains variants with popMAX > 1% which we don't want to inadvertantly include in any testing), and another named `${output_file}.long.csv.gz`.
 Example shell scripts looping over chromosomes are [here](https://github.com/BRaVa-genetics/variant-annotation/blob/main/SAIGE_annotations/scripts/brava_create_annot.sh).
 
 ## Step 2: Merge the AC and annotation information in a summary
 This script reads in the output of *Step 1* and *Step 2a* to generate four summary files for each call to the script.
 
 ```
-Rscript 02_merged_annots_and_AC.r --AC_path ${step_1_output.frqx.gz} --vep_spliceAI_processed ${step_2a_output.long.csv.gz} --out ${out}
+Rscript 02_merged_annots_and_AC.r --AC_path ${step_1_output.frqx.gz} --vep_spliceAI_processed ${step_2a_output.long.csv.gz} --spliceAI_bins --out ${out}
 ```
 It's likely that you will generate separate summary files for each chromosome and for each population label. See [`02_get_merged_annots_and_AC.sh`](https://github.com/astheeggeggs/BRaVa_curation/blob/main/QC/annotation_summary/02_get_merged_annots_and_AC.sh) for an example using the DNANexus RAP.
 These files should be uploaded to your biobank/cohort specific bucket. We recommend naming the files with the following naming convention so that *Step 3* plotting can be easily carried out:
